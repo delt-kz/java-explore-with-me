@@ -1,9 +1,9 @@
 package ru.practicum.ewm.repository;
 
-import ru.practicum.ewm.model.Hit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import ru.practicum.ewm.dto.StatsDto;
+import ru.practicum.ewm.model.Hit;
 
 import java.time.LocalDateTime;
 import java.util.List;

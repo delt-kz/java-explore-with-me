@@ -2,15 +2,14 @@ package ru.practicum.ewm.mapper;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import ru.practicum.ewm.model.Hit;
 import ru.practicum.ewm.dto.HitDto;
+import ru.practicum.ewm.model.Hit;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class HitMapper {
-    public static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    public static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public static Hit fromDto(HitDto dto) {
         Hit hit = new Hit();

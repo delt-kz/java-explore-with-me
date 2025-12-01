@@ -1,12 +1,12 @@
 package ru.practicum.ewm.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.ewm.mapper.HitMapper;
-import ru.practicum.ewm.model.Hit;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.dto.HitDto;
 import ru.practicum.ewm.dto.StatsDto;
+import ru.practicum.ewm.mapper.HitMapper;
+import ru.practicum.ewm.model.Hit;
 import ru.practicum.ewm.repository.StatisticsRepository;
 
 import java.time.LocalDateTime;

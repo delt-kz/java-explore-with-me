@@ -1,10 +1,10 @@
 package ru.practicum.ewm.client;
 
-import ru.practicum.ewm.dto.HitDto;
-import ru.practicum.ewm.dto.StatsDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import ru.practicum.ewm.dto.HitDto;
+import ru.practicum.ewm.dto.StatsDto;
 
 import java.util.Arrays;
 import java.util.List;

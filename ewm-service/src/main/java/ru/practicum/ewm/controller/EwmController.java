@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping
-public class controller {
+public class EwmController {
     @GetMapping
     public List<StatsDto> get() {
         StatisticsClient client = new StatisticsClient("http://stats-service:9090");

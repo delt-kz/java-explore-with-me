@@ -2,10 +2,10 @@ package ru.practicum.ewm.controller;
 
 
 import lombok.RequiredArgsConstructor;
-import ru.practicum.ewm.dto.HitDto;
-import ru.practicum.ewm.dto.StatsDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.dto.HitDto;
+import ru.practicum.ewm.dto.StatsDto;
 import ru.practicum.ewm.service.StatisticsService;
 
 import java.net.URLDecoder;
