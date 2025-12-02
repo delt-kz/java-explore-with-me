@@ -10,6 +10,7 @@ import ru.practicum.ewm.model.Hit;
 import ru.practicum.ewm.repository.StatisticsRepository;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 import static ru.practicum.ewm.mapper.HitMapper.dateTimeFormatter;
@@ -33,21 +34,25 @@ public class StatisticsService {
         LocalDateTime start = LocalDateTime.parse(startString, dateTimeFormatter);
         LocalDateTime end = LocalDateTime.parse(endString, dateTimeFormatter);
 
+
+        List<StatsDto> stats;
+
         if (uris == null || uris.isEmpty()) {
-            // Список пустой — возвращаем все
             if (unique != null && unique) {
-                return repo.getStatsUniqueAll(start, end);
+                stats = repo.getStatsUniqueAll(start, end);
             } else {
-                return repo.getStatsAll(start, end);
+                stats = repo.getStatsAll(start, end);
             }
         } else {
-            // Список не пустой — фильтруем по uris
             if (unique != null && unique) {
-                return repo.getStatsUnique(start, end, uris);
+                stats = repo.getStatsUnique(start, end, uris);
             } else {
-                return repo.getStats(start, end, uris);
+                stats = repo.getStats(start, end, uris);
             }
         }
+
+        stats.sort(Comparator.comparingLong(StatsDto::getHits).reversed());
+        return stats;
     }
 
 }
