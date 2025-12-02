@@ -33,10 +33,21 @@ public class StatisticsService {
         LocalDateTime start = LocalDateTime.parse(startString, dateTimeFormatter);
         LocalDateTime end = LocalDateTime.parse(endString, dateTimeFormatter);
 
-        if (unique != null && unique) {
-            return repo.getStatsUnique(start, end, uris);
+        if (uris == null || uris.isEmpty()) {
+            // Список пустой — возвращаем все
+            if (unique != null && unique) {
+                return repo.getStatsUniqueAll(start, end);
+            } else {
+                return repo.getStatsAll(start, end);
+            }
         } else {
-            return repo.getStats(start, end, uris);
+            // Список не пустой — фильтруем по uris
+            if (unique != null && unique) {
+                return repo.getStatsUnique(start, end, uris);
+            } else {
+                return repo.getStats(start, end, uris);
+            }
         }
     }
+
 }

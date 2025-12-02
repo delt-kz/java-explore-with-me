@@ -32,4 +32,21 @@ public interface StatisticsRepository extends JpaRepository<Hit, Long> {
     List<StatsDto> getStats(LocalDateTime start,
                                   LocalDateTime end,
                                   List<String> uris);
+
+    @Query("""
+    SELECT new ru.practicum.ewm.dto.StatsDto(h.app, h.uri, COUNT(DISTINCT h.ip))
+    FROM Hit h
+    WHERE h.timestamp BETWEEN :start AND :end
+    GROUP BY h.app, h.uri
+""")
+    List<StatsDto> getStatsUniqueAll(LocalDateTime start, LocalDateTime end);
+
+    @Query("""
+    SELECT new ru.practicum.ewm.dto.StatsDto(h.app, h.uri, COUNT(h.ip))
+    FROM Hit h
+    WHERE h.timestamp BETWEEN :start AND :end
+    GROUP BY h.app, h.uri
+""")
+    List<StatsDto> getStatsAll(LocalDateTime start, LocalDateTime end);
+
 }
