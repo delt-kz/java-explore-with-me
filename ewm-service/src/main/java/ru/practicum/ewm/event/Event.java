@@ -22,8 +22,8 @@ public class Event {
     @OneToOne
     @JoinColumn(name = "category_id")
     private Category category;
-    private Integer confirmedRequests;
-    private LocalDateTime createdOn;
+    private Integer confirmedRequests = 0;
+    private LocalDateTime createdOn = LocalDateTime.now();
     private String description;
     private LocalDateTime eventDate;
     @OneToOne
@@ -35,8 +35,8 @@ public class Event {
     private Integer participantLimit;
     private LocalDateTime publishedOn;
     private Boolean requestModeration;
-    private EventState state;
+    private EventState state = EventState.PENDING;
     private String title;
-    private Long views;
+    private Long views = 0L;
 }
 

@@ -1,16 +1,40 @@
 package ru.practicum.ewm.request;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import ru.practicum.ewm.event.Event;
 
 import java.util.List;
 
 public interface RequestRepository extends JpaRepository<ParticipationRequest, Long> {
 
-    List<ParticipationRequest> findAllByEvent(Long eventId);
+    List<ParticipationRequest> findAllByEvent_Id(Long eventId);
 
-    List<ParticipationRequest> findAllByRequester(Long userId);
+    List<ParticipationRequest> findAllByRequester_Id(Long userId);
 
-    Boolean existsByEventIdAndRequesterId(Long eventId, Long userId);
+    Boolean existsByEvent_IdAndRequester_Id(Long eventId, Long userId);
+
+    List<ParticipationRequest> findAllByEventIdAndStatus(Long eventId, RequestStatus status);
+
+    List<ParticipationRequest> findAllByIdInAndEvent_Id(List<Long> ids, Long eventId);
+
+    @Modifying
+    @Query("""
+            UPDATE ParticipationRequest r SET r.status = :status WHERE r.id IN :requestIds
+            """)
+    void updateStatusByIdIn(List<Long> requestIds, RequestStatus status);
+
+    @Query("""
+            SELECT COUNT(r) = 0 
+            FROM ParticipationRequest r
+            WHERE r.id IN :ids AND r.status <> 'PENDING'
+            """)
+    Boolean areAllPending(List<Long> ids);
+
+    @Modifying
+    @Query("""
+            UPDATE ParticipationRequest r SET r.status = 'REJECTED' WHERE r.event.id = :eventId AND r.status = 'PENDING'      
+            """)
+    void rejectPendingByEventId(Long eventId);
+
 }

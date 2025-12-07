@@ -27,7 +27,7 @@ public class RequestService {
             throw new NotFoundException("User not found");
         }
 
-        return requestRepo.findAllByRequester(userId)
+        return requestRepo.findAllByRequester_Id(userId)
                 .stream()
                 .map(RequestMapper::toDto)
                 .toList();
@@ -40,7 +40,7 @@ public class RequestService {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
-        if (requestRepo.existsByEventIdAndRequesterId(eventId, userId)) {
+        if (requestRepo.existsByEvent_IdAndRequester_Id(eventId, userId)) {
             throw new BusinessLogicException("Request already exists");
         }
 
