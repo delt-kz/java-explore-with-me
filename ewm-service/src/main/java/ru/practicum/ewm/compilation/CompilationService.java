@@ -45,9 +45,6 @@ public class CompilationService {
     }
 
     public List<CompilationDto> getAllCompilations(Boolean pinned, Integer from, Integer size) {
-        pinned = pinned != null && pinned;
-        from = from == null ? 0 : from;
-        size = size == null ? 10 : size;
         PageRequest pageRequest = PageRequest.of(from / size, size);
         Page<Compilation> page = compilationRepo.findAllByPinned(pageRequest, pinned);
         List<Compilation> compilations = page.getContent();

@@ -36,8 +36,6 @@ public class CategoryService {
     }
 
     public List<CategoryDto> getAllCategories(Integer from, Integer size) {
-        from = from == null ? 0 : from;
-        size = size == null ? 10 : size;
         PageRequest pageRequest = PageRequest.of(from / size, size);
         Page<Category> page = categoryRepo.findAll(pageRequest);
         return CategoryMapper.toDto(page.getContent());

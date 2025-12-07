@@ -1,10 +1,11 @@
-package ru.practicum.ewm.user;
+package ru.practicum.ewm.request;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import ru.practicum.ewm.event.Event;
+import ru.practicum.ewm.user.User;
 
 import java.time.LocalDateTime;
 
@@ -24,5 +25,5 @@ public class ParticipationRequest {
     @ManyToOne
     @JoinColumn(name = "requester_id")
     private User requester;
-    private RequestStatus status;
+    private RequestStatus status = RequestStatus.PENDING;
 }
