@@ -3,10 +3,9 @@ package ru.practicum.ewm.event;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-import java.util.List;
+public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecificationExecutor<Event> {
 
-public interface EventRepository extends JpaRepository<Event, Long> {
-
-    Page<Event> findAllByUserId(Long userId, Pageable pageable);
+    Page<Event> findAllByInitiator_Id(Long userId, Pageable pageable);
 }

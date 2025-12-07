@@ -5,10 +5,7 @@ import lombok.NoArgsConstructor;
 import ru.practicum.ewm.category.Category;
 import ru.practicum.ewm.category.CategoryMapper;
 import ru.practicum.ewm.category.dto.CategoryDto;
-import ru.practicum.ewm.event.dto.EventFullDto;
-import ru.practicum.ewm.event.dto.EventShortDto;
-import ru.practicum.ewm.event.dto.NewEventDto;
-import ru.practicum.ewm.event.dto.UpdateEventUserRequest;
+import ru.practicum.ewm.event.dto.*;
 import ru.practicum.ewm.user.User;
 import ru.practicum.ewm.user.UserMapper;
 import ru.practicum.ewm.user.dto.UserShortDto;
@@ -42,7 +39,8 @@ public class EventMapper {
                 .map(EventMapper::toShortDto)
                 .collect(Collectors.toList());
     }
-    
+
+
     public static Event fromNew(NewEventDto dto, User initiator, Category category) {
         Event event = new Event();
         LocalDateTime eventDate = LocalDateTime.parse(dto.getEventDate(), dateTimeFormatter);
@@ -58,7 +56,8 @@ public class EventMapper {
         event.setInitiator(initiator);
         return event;
     }
-    
+
+
     public static EventFullDto toFullDto(Event event) {
         String eventDate = event.getEventDate().format(dateTimeFormatter);
         String createdOn = event.getCreatedOn().format(dateTimeFormatter);
@@ -83,35 +82,56 @@ public class EventMapper {
                 event.getViews());
     }
 
+    public static List<EventFullDto> toFullDto(List<Event> events) {
+        return events.stream()
+                .map(EventMapper::toFullDto)
+                .collect(Collectors.toList());
+    }
+
     public static Event fromUpdate(UpdateEventUserRequest dto, Event event) {
-        if (dto.getAnnotation() != null) {
-            event.setAnnotation(dto.getAnnotation());
+        return updateEventBase(event,
+                dto.getAnnotation(),
+                dto.getDescription(),
+                dto.getEventDate(),
+                dto.getLocation(),
+                dto.getPaid(),
+                dto.getParticipantLimit(),
+                dto.getRequestModeration(),
+                dto.getStateAction(),
+                dto.getTitle());
+    }
+
+    public static Event fromUpdate(UpdateEventAdminRequest dto, Event event) {
+        return updateEventBase(event,
+                dto.getAnnotation(),
+                dto.getDescription(),
+                dto.getEventDate(),
+                dto.getLocation(),
+                dto.getPaid(),
+                dto.getParticipantLimit(),
+                dto.getRequestModeration(),
+                dto.getStateAction(),
+                dto.getTitle());
+    }
+
+
+
+
+    private static Event updateEventBase(Event event, String annotation, String description, String eventDate,
+                                         Location location, Boolean paid, Integer participantLimit,
+                                         Boolean requestModeration, String stateAction, String title) {
+        if (annotation != null) event.setAnnotation(annotation);
+        if (description != null) event.setDescription(description);
+        if (eventDate != null) event.setEventDate(LocalDateTime.parse(eventDate, dateTimeFormatter));
+        if (location != null) event.setLocation(location);
+        if (paid != null) event.setPaid(paid);
+        if (participantLimit != null) event.setParticipantLimit(participantLimit);
+        if (requestModeration != null) event.setRequestModeration(requestModeration);
+        if (stateAction != null) {
+            event.setState(stateAction.equals("SEND_TO_REVIEW") ? EventState.PENDING : EventState.CANCELED);
         }
-        if (dto.getDescription() != null) {
-            event.setDescription(dto.getDescription());
-        }
-        if (dto.getEventDate() != null) {
-            event.setEventDate(LocalDateTime.parse(dto.getEventDate(), dateTimeFormatter));
-        }
-        if (dto.getLocation() != null) {
-            event.setLocation(dto.getLocation());
-        }
-        if (dto.getPaid() != null) {
-            event.setPaid(dto.getPaid());
-        }
-        if (dto.getParticipantLimit() != null) {
-            event.setParticipantLimit(dto.getParticipantLimit());
-        }
-        if (dto.getRequestModeration() != null) {
-            event.setRequestModeration(dto.getRequestModeration());
-        }
-        if (dto.getStateAction() != null) {
-            event.setState(dto.getStateAction().equals("SEND_TO_REVIEW") ?
-                    EventState.PENDING : EventState.CANCELED);
-        }
-        if (dto.getTitle() != null) {
-            event.setTitle(dto.getTitle());
-        }
+        if (title != null) event.setTitle(title);
         return event;
     }
+
 }

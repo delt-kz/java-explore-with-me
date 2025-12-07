@@ -25,16 +25,16 @@ public interface RequestRepository extends JpaRepository<ParticipationRequest, L
     void updateStatusByIdIn(List<Long> requestIds, RequestStatus status);
 
     @Query("""
-            SELECT COUNT(r) = 0 
+            SELECT COUNT(r) = 0
             FROM ParticipationRequest r
-            WHERE r.id IN :ids AND r.status <> 'PENDING'
+            WHERE r.id IN :ids AND r.status <> ru.practicum.ewm.request.RequestStatus.PENDING
             """)
     Boolean areAllPending(List<Long> ids);
 
-    @Modifying
     @Query("""
-            UPDATE ParticipationRequest r SET r.status = 'REJECTED' WHERE r.event.id = :eventId AND r.status = 'PENDING'      
+                UPDATE ParticipationRequest r
+                SET r.status = ru.practicum.ewm.request.RequestStatus.REJECTED
+                WHERE r.event.id = :eventId AND r.status = ru.practicum.ewm.request.RequestStatus.PENDING
             """)
     void rejectPendingByEventId(Long eventId);
-
 }

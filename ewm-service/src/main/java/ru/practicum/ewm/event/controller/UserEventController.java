@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.event.EventService;
 import ru.practicum.ewm.event.dto.*;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
-import ru.practicum.ewm.user.UserService;
 
 import java.util.List;
 
@@ -18,8 +17,8 @@ public class UserEventController {
 
     @GetMapping
     public List<EventShortDto> getAllEvents(@PathVariable Long userId,
-                                         @RequestParam(required = false, defaultValue = "0") Integer from,
-                                         @RequestParam(required = false, defaultValue = "10") Integer size) {
+                                         @RequestParam(defaultValue = "0") Integer from,
+                                         @RequestParam(defaultValue = "10") Integer size) {
         return eventService.getAllEvents(userId, from, size);
     }
 

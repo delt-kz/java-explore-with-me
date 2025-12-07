@@ -3,6 +3,8 @@ package ru.practicum.ewm.event;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.category.Category;
@@ -13,10 +15,8 @@ import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.request.ParticipationRequest;
 import ru.practicum.ewm.request.RequestMapper;
 import ru.practicum.ewm.request.RequestRepository;
-import ru.practicum.ewm.request.RequestStatus;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 import ru.practicum.ewm.user.User;
-import ru.practicum.ewm.user.UserMapper;
 import ru.practicum.ewm.user.UserRepository;
 
 import java.time.LocalDateTime;
@@ -39,7 +39,7 @@ public class EventService {
         }
         PageRequest pageRequest = PageRequest.of(from / size, size);
 
-        Page<Event> events = eventRepo.findAllByUserId(userId, pageRequest);
+        Page<Event> events = eventRepo.findAllByInitiator_Id(userId, pageRequest);
         return EventMapper.toShortDto(events.getContent());
     }
 
@@ -143,6 +143,79 @@ public class EventService {
         result.setRejectedRequests(rejected);
 
         return result;
+    }
+
+    //ADMIN
+
+    public List<EventFullDto> getEvents(List<Long> users,
+                                 List<String> states,
+                                 List<Long> categories,
+                                 LocalDateTime rangeStart,
+                                 LocalDateTime rangeEnd,
+                                 Integer from,
+                                 Integer size) {
+        Specification<Event> spec = Specification.where(null);
+
+        if (users != null && !users.isEmpty()) {
+            spec = spec.and((root, query, cb) ->
+                    root.get("initiator").get("id").in(users)
+            );
+        }
+        if (states != null && !states.isEmpty()) {
+            spec = spec.and((root, query, cb) ->
+                    root.get("state").in(states)
+            );
+        }
+        if (categories != null && !categories.isEmpty()) {
+            spec = spec.and((root, query, cb) ->
+                    root.get("category").get("id").in(categories)
+            );
+        }
+        if (rangeStart != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.greaterThanOrEqualTo(root.get("eventDate"), rangeStart)
+            );
+        }
+        if (rangeEnd != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.lessThanOrEqualTo(root.get("eventDate"), rangeEnd)
+            );
+        }
+
+        Pageable pageable = PageRequest.of(from / size, size);
+
+        return EventMapper.toFullDto(eventRepo.findAll(spec, pageable).getContent());
+    }
+
+    @Transactional
+    public EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest dto) {
+        Event event = eventRepo.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event not found"));
+
+        if (dto.hasStateAction()) {
+            if (dto.getStateAction().equals("SEND_TO_REVIEW")) {
+                if (event.getState() != EventState.PENDING) {
+                    throw new BusinessLogicException("Event can only be published when in PENDING state");
+                }
+                if (event.getEventDate().minusHours(1).isBefore(LocalDateTime.now())) {
+                    throw new BusinessLogicException("Event must start at least 1 hour after publication");
+                }
+                event.setState(EventState.PUBLISHED);
+                event.setPublishedOn(LocalDateTime.now());
+            } else if (dto.getStateAction().equals("CANCEL_REVIEW")) {
+                if (event.getState() == EventState.PUBLISHED) {
+                    throw new BusinessLogicException("Cannot reject published event");
+                }
+                event.setState(EventState.CANCELED);
+            }
+        }
+
+        if (dto.hasCategory()) {
+            event.setCategory(categoryRepo.findById(dto.getCategory())
+                    .orElseThrow(() -> new NotFoundException("Category not found")));
+        }
+
+        return EventMapper.toFullDto(eventRepo.save(EventMapper.fromUpdate(dto, event)));
     }
 
 }

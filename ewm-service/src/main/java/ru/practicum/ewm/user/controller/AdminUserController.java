@@ -1,7 +1,6 @@
 package ru.practicum.ewm.user.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.user.UserService;
@@ -18,20 +17,20 @@ public class AdminUserController {
 
     @GetMapping
     public List<UserDto> getUsers(@RequestParam(required = false) List<Long> ids,
-                                  @RequestParam(required = false, defaultValue = "0") Integer from,
-                                  @RequestParam(required = false, defaultValue = "10") Integer size) {
-
+                                  @RequestParam(defaultValue = "0") Integer from,
+                                  @RequestParam(defaultValue = "10") Integer size) {
+        return userService.getUsers(ids, from, size);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserDto createUser(@RequestBody NewUserRequest dto) {
-
+        return userService.createUser(dto);
     }
 
     @DeleteMapping("/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(@PathVariable Long userId) {
-
+        userService.deleteUser(userId);
     }
 }

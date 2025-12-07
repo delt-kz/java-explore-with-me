@@ -4,7 +4,7 @@ import lombok.Data;
 import ru.practicum.ewm.event.Location;
 
 @Data
-public class UpdateEventUserRequest {
+public class UpdateEventAdminRequest {
     private String annotation;
     private Long category;
     private String description;
@@ -55,5 +55,4 @@ public class UpdateEventUserRequest {
     public boolean hasTitle() {
         return title != null;
     }
-
 }

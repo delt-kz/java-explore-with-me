@@ -3,7 +3,6 @@ package ru.practicum.ewm.event.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import ru.practicum.ewm.category.dto.CategoryDto;
-import ru.practicum.ewm.user.User;
 import ru.practicum.ewm.user.dto.UserShortDto;
 
 @Data

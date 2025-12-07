@@ -11,7 +11,7 @@ public class UpdateCompilationDto {
     private String title;
 
     public boolean hasEvents() {
-        return events != null && !events.isEmpty();
+        return events != null;
     }
 
     public boolean hasPinned() {
@@ -19,6 +19,6 @@ public class UpdateCompilationDto {
     }
 
     public boolean hasTitle() {
-        return title != null && !title.isBlank();
+        return title != null;
     }
 }
