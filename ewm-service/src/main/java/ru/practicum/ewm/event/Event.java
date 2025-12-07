@@ -1,9 +1,11 @@
-package ru.practicum.ewm.model;
+package ru.practicum.ewm.event;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import ru.practicum.ewm.category.Category;
+import ru.practicum.ewm.user.User;
 
 import java.time.LocalDateTime;
 

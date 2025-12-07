@@ -1,4 +1,4 @@
-package ru.practicum.ewm.model;
+package ru.practicum.ewm.event;
 
 import jakarta.persistence.Embeddable;
 

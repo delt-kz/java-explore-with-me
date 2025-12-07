@@ -1,9 +1,10 @@
-package ru.practicum.ewm.model;
+package ru.practicum.ewm.compilation;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import ru.practicum.ewm.event.Event;
 
 import java.util.List;
 
