@@ -37,7 +37,7 @@ public class CategoryService {
             category.setName(dto.getName());
         }
 
-        if(dto.getName().equals(category.getName())) {
+        if (dto.getName().equals(category.getName())) {
             throw new BusinessLogicException("Category name must be changed");
         }
         return CategoryMapper.toDto(categoryRepo.save(category));

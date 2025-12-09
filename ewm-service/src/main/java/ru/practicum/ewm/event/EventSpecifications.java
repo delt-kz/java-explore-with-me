@@ -57,6 +57,7 @@ public class EventSpecifications {
         }
         return result;
     }
+
     public static Specification<Event> usersIn(List<Long> users) {
         if (users == null || users.isEmpty()) return null;
         return (root, query, cb) -> root.get("initiator").get("id").in(users);
