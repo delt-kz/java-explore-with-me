@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,6 +64,15 @@ public class EventService {
                 .orElseThrow(() -> new NotFoundException("Event not found")));
     }
 
+    public EventFullDto getEventPublic(Long id) {
+        Event event = eventRepo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Event not found"));
+        if (event.getState() != EventState.PUBLISHED) {
+            throw new BusinessLogicException("Event is not published");
+        }
+        return EventMapper.toFullDto(event);
+    }
+
     @Transactional
     public EventFullDto updateEvent(Long userId, Long eventId, UpdateEventUserRequest dto) {
         Event event = eventRepo.findById(eventId)
@@ -117,7 +127,7 @@ public class EventService {
         }
 
         int currentlyConfirmed = event.getConfirmedRequests();
-        int willApprove = dto.getStatus() == APPROVED ? requests.size() : 0;
+        int willApprove = dto.getStatus() == CONFIRMED ? requests.size() : 0;
 
         if (currentlyConfirmed + willApprove > event.getParticipantLimit()) {
             throw new BusinessLogicException("Event participant limit exceeded");
@@ -125,7 +135,7 @@ public class EventService {
 
         requests.forEach(r -> r.setStatus(dto.getStatus()));
 
-        if (dto.getStatus() == APPROVED) {
+        if (dto.getStatus() == CONFIRMED) {
             event.setConfirmedRequests(currentlyConfirmed + willApprove);
         }
 
@@ -134,7 +144,7 @@ public class EventService {
         }
 
         List<ParticipationRequestDto> confirmed =
-                RequestMapper.toDto(requestRepo.findAllByEventIdAndStatus(eventId, APPROVED));
+                RequestMapper.toDto(requestRepo.findAllByEventIdAndStatus(eventId, CONFIRMED));
         List<ParticipationRequestDto> rejected =
                 RequestMapper.toDto(requestRepo.findAllByEventIdAndStatus(eventId, REJECTED));
 
@@ -145,44 +155,58 @@ public class EventService {
         return result;
     }
 
-    //ADMIN
+    public List<EventShortDto> getPublicEvents(
+            String text,
+            List<Long> categories,
+            Boolean paid,
+            LocalDateTime rangeStart,
+            LocalDateTime rangeEnd,
+            Boolean onlyAvailable,
+            String sort,
+            int from,
+            int size
+    ) {
+        Specification<Event> spec = EventSpecifications.combine(
+                EventSpecifications.published(),
+                EventSpecifications.textSearch(text),
+                EventSpecifications.categoriesIn(categories),
+                EventSpecifications.paid(paid),
+                EventSpecifications.dateRange(rangeStart, rangeEnd),
+                EventSpecifications.onlyAvailable(onlyAvailable)
+        );
 
-    public List<EventFullDto> getEvents(List<Long> users,
-                                 List<String> states,
-                                 List<Long> categories,
-                                 LocalDateTime rangeStart,
-                                 LocalDateTime rangeEnd,
-                                 Integer from,
-                                 Integer size) {
-        Specification<Event> spec = Specification.where(null);
+        Pageable pageable;
+        if ("VIEWS".equalsIgnoreCase(sort)) {
+            pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "views"));
+        } else {
+            pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.ASC, "eventDate"));
+        }
 
-        if (users != null && !users.isEmpty()) {
-            spec = spec.and((root, query, cb) ->
-                    root.get("initiator").get("id").in(users)
-            );
-        }
-        if (states != null && !states.isEmpty()) {
-            spec = spec.and((root, query, cb) ->
-                    root.get("state").in(states)
-            );
-        }
-        if (categories != null && !categories.isEmpty()) {
-            spec = spec.and((root, query, cb) ->
-                    root.get("category").get("id").in(categories)
-            );
-        }
-        if (rangeStart != null) {
-            spec = spec.and((root, query, cb) ->
-                    cb.greaterThanOrEqualTo(root.get("eventDate"), rangeStart)
-            );
-        }
-        if (rangeEnd != null) {
-            spec = spec.and((root, query, cb) ->
-                    cb.lessThanOrEqualTo(root.get("eventDate"), rangeEnd)
-            );
-        }
+        return EventMapper.toShortDto(eventRepo.findAll(spec, pageable).getContent());
+    }
+
+        //ADMIN
+
+
+    public List<EventFullDto> getEvents(
+            List<Long> users,
+            List<EventState> states,
+            List<Long> categories,
+            LocalDateTime rangeStart,
+            LocalDateTime rangeEnd,
+            int from,
+            int size
+    ) {
+        Specification<Event> spec = EventSpecifications.combine(
+                EventSpecifications.usersIn(users),
+                EventSpecifications.statesIn(states),
+                EventSpecifications.categoriesIn(categories),
+                EventSpecifications.dateRange(rangeStart, rangeEnd)
+        );
 
         Pageable pageable = PageRequest.of(from / size, size);
+
+        List<Event> events = eventRepo.findAll(spec, pageable).getContent();
 
         return EventMapper.toFullDto(eventRepo.findAll(spec, pageable).getContent());
     }
@@ -191,9 +215,8 @@ public class EventService {
     public EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest dto) {
         Event event = eventRepo.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event not found"));
-
         if (dto.hasStateAction()) {
-            if (dto.getStateAction().equals("SEND_TO_REVIEW")) {
+            if (dto.getStateAction().equals("PUBLISH_EVENT")) {
                 if (event.getState() != EventState.PENDING) {
                     throw new BusinessLogicException("Event can only be published when in PENDING state");
                 }
@@ -202,9 +225,9 @@ public class EventService {
                 }
                 event.setState(EventState.PUBLISHED);
                 event.setPublishedOn(LocalDateTime.now());
-            } else if (dto.getStateAction().equals("CANCEL_REVIEW")) {
-                if (event.getState() == EventState.PUBLISHED) {
-                    throw new BusinessLogicException("Cannot reject published event");
+            } else if (dto.getStateAction().equals("REJECT_EVENT")) {
+                if (event.getState() == EventState.PUBLISHED || event.getState() == EventState.CANCELED) {
+                    throw new BusinessLogicException("Cannot reject published or canceled event");
                 }
                 event.setState(EventState.CANCELED);
             }

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.category.dto.CategoryDto;
 import ru.practicum.ewm.category.dto.NewCategoryDto;
+import ru.practicum.ewm.exception.BusinessLogicException;
 import ru.practicum.ewm.exception.NotFoundException;
 
 import java.util.List;
@@ -17,20 +18,27 @@ import java.util.List;
 public class CategoryService {
     private final CategoryRepository categoryRepo;
 
+    @Transactional
     public CategoryDto createCategory(NewCategoryDto dto) {
         Category category = CategoryMapper.fromNew(dto);
         return CategoryMapper.toDto(categoryRepo.save(category));
     }
 
+    @Transactional
     public void deleteCategory(Long id) {
         categoryRepo.deleteById(id);
     }
 
+    @Transactional
     public CategoryDto updateCategory(Long id, NewCategoryDto dto) {
         Category category = categoryRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("Category not found"));
         if (dto.getName() != null) {
             category.setName(dto.getName());
+        }
+
+        if(dto.getName().equals(category.getName())) {
+            throw new BusinessLogicException("Category name must be changed");
         }
         return CategoryMapper.toDto(categoryRepo.save(category));
     }

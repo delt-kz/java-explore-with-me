@@ -62,7 +62,7 @@ public class RequestService {
         request.setEvent(event);
 
         if (!event.getRequestModeration()) {
-            request.setStatus(RequestStatus.APPROVED);
+            request.setStatus(RequestStatus.CONFIRMED);
         }
 
         return RequestMapper.toDto(requestRepo.save(request));

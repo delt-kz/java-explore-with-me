@@ -9,7 +9,7 @@ import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 import java.util.List;
 
 @RestController
-@RequestMapping("/user/{userId}/requests")
+@RequestMapping("/users/{userId}/requests")
 @RequiredArgsConstructor
 public class UserRequestController {
     private final RequestService requestService;

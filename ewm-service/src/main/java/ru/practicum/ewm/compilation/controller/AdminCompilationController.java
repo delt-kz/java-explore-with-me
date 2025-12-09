@@ -1,5 +1,6 @@
 package ru.practicum.ewm.compilation.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +17,7 @@ public class AdminCompilationController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CompilationDto create(@RequestBody NewCompilationDto dto) {
+    public CompilationDto create(@RequestBody @Valid NewCompilationDto dto) {
         return compilationService.createCompilation(dto);
     }
 
@@ -28,7 +29,7 @@ public class AdminCompilationController {
 
     @PatchMapping("/{compId}")
     public CompilationDto update(@PathVariable Long compId,
-                                 @RequestBody UpdateCompilationDto dto) {
+                                 @RequestBody @Valid UpdateCompilationDto dto) {
         return compilationService.updateCompilation(compId, dto);
     }
 }

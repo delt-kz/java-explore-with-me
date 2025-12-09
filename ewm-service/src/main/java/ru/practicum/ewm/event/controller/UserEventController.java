@@ -1,5 +1,6 @@
 package ru.practicum.ewm.event.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +11,7 @@ import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 import java.util.List;
 
 @RestController
-@RequestMapping("/user/{userId}/events")
+@RequestMapping("/users/{userId}/events")
 @RequiredArgsConstructor
 public class UserEventController {
     private final EventService eventService;
@@ -25,7 +26,7 @@ public class UserEventController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto createEvent(@PathVariable Long userId,
-                                    @RequestBody NewEventDto dto) {
+                                    @RequestBody @Valid NewEventDto dto) {
         return eventService.createEvent(userId, dto);
     }
 
@@ -38,7 +39,7 @@ public class UserEventController {
     @PatchMapping("/{eventId}")
     public EventFullDto updateEvent(@PathVariable Long userId,
                                     @PathVariable Long eventId,
-                                    @RequestBody UpdateEventUserRequest dto) {
+                                    @RequestBody @Valid UpdateEventUserRequest dto) {
         return eventService.updateEvent(userId, eventId, dto);
     }
 

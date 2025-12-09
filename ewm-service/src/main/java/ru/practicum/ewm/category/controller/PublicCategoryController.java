@@ -8,7 +8,7 @@ import ru.practicum.ewm.category.dto.CategoryDto;
 import java.util.List;
 
 @RestController
-@RequestMapping("/category")
+@RequestMapping("/categories")
 @RequiredArgsConstructor
 public class PublicCategoryController {
     private final CategoryService categoryService;
