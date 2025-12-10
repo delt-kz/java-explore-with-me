@@ -31,6 +31,7 @@ public interface RequestRepository extends JpaRepository<ParticipationRequest, L
             """)
     Boolean areAllPending(List<Long> ids);
 
+    @Modifying
     @Query("""
                 UPDATE ParticipationRequest r
                 SET r.status = ru.practicum.ewm.request.RequestStatus.REJECTED

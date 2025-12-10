@@ -13,6 +13,7 @@ import ru.practicum.ewm.event.EventRepository;
 import ru.practicum.ewm.exception.NotFoundException;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Transactional(readOnly = true)
@@ -23,7 +24,11 @@ public class CompilationService {
 
     @Transactional
     public CompilationDto createCompilation(NewCompilationDto dto) {
-        List<Event> events = eventRepo.findAllById(dto.getEvents());
+        List<Long> eventIds = dto.getEvents().stream()
+                .filter(Objects::nonNull)
+                .toList();
+
+        List<Event> events = eventRepo.findAllById(eventIds);
         Compilation compilation = CompilationMapper.fromNew(dto, events);
         return CompilationMapper.toDto(compilationRepo.save(compilation));
     }
