@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.category.dto.CategoryDto;
 import ru.practicum.ewm.category.dto.NewCategoryDto;
-import ru.practicum.ewm.exception.BusinessLogicException;
 import ru.practicum.ewm.exception.NotFoundException;
 
 import java.util.List;

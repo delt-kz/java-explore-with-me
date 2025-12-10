@@ -1,6 +1,5 @@
 package ru.practicum.ewm.event.controller;
 
-import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;

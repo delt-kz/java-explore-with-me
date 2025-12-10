@@ -38,7 +38,7 @@ public class EventService {
     private final UserRepository userRepo;
     private final CategoryRepository categoryRepo;
     private final RequestRepository requestRepo;
-    private final StatisticsClient statisticsClient = new StatisticsClient("http://localhost:9090");
+    private final StatisticsClient statisticsClient = new StatisticsClient("http://stats-server:9090");
 
     public List<EventShortDto> getAllEvents(Long userId, Integer from, Integer size) {
         if (!userRepo.existsById(userId)) {

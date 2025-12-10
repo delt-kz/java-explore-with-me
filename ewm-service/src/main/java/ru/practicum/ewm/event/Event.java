@@ -20,7 +20,7 @@ public class Event {
     private Long id;
     @Column(length = 2000, nullable = false)
     private String annotation;
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
     private Integer confirmedRequests = 0;
@@ -28,7 +28,7 @@ public class Event {
     @Column(length = 7000, nullable = false)
     private String description;
     private LocalDateTime eventDate;
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "initiator_id")
     private User initiator;
     @Embedded
