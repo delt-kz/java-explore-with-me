@@ -15,11 +15,22 @@ import java.util.List;
 public class CompilationMapper {
     public static Compilation fromNew(NewCompilationDto dto, List<Event> events) {
         Compilation compilation = new Compilation();
-        compilation.setEvents(events);
-        compilation.setPinned(dto.getPinned());
-        compilation.setTitle(dto.getTitle());
+
+        if (events != null) {
+            compilation.setEvents(events);
+        }
+
+        if (dto.getPinned() != null) {
+            compilation.setPinned(dto.getPinned());
+        }
+
+        if (dto.getTitle() != null) {
+            compilation.setTitle(dto.getTitle());
+        }
+
         return compilation;
     }
+
 
     public static CompilationDto toDto(Compilation compilation) {
         List<EventShortDto> events = EventMapper.toShortDto(compilation.getEvents());

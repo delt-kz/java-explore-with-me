@@ -1,5 +1,7 @@
 package ru.practicum.ewm.event.controller;
 
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -17,8 +19,9 @@ public class PublicEventController {
     private final EventService eventService;
 
     @GetMapping("/{id}")
-    public EventFullDto getEvent(@PathVariable Long id) {
-        return eventService.getEventPublic(id);
+    public EventFullDto getEvent(@PathVariable Long id,
+                                 HttpServletRequest request) {
+        return eventService.getEventPublic(id, request);
     }
 
     @GetMapping
@@ -31,9 +34,10 @@ public class PublicEventController {
             @RequestParam(defaultValue = "false") Boolean onlyAvailable,
             @RequestParam(defaultValue = "EVENT_DATE") String sort,
             @RequestParam(defaultValue = "0") int from,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            HttpServletRequest request
     ) {
-        return eventService.getPublicEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
+        return eventService.getPublicEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size, request);
     }
 
 }

@@ -1,5 +1,6 @@
 package ru.practicum.ewm.event;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -10,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.category.Category;
 import ru.practicum.ewm.category.CategoryRepository;
+import ru.practicum.ewm.client.StatisticsClient;
+import ru.practicum.ewm.dto.HitDto;
 import ru.practicum.ewm.event.dto.*;
 import ru.practicum.ewm.exception.BadRequestException;
 import ru.practicum.ewm.exception.BusinessLogicException;
@@ -35,6 +38,7 @@ public class EventService {
     private final UserRepository userRepo;
     private final CategoryRepository categoryRepo;
     private final RequestRepository requestRepo;
+    private final StatisticsClient statisticsClient = new StatisticsClient("http://localhost:9090");
 
     public List<EventShortDto> getAllEvents(Long userId, Integer from, Integer size) {
         if (!userRepo.existsById(userId)) {
@@ -64,15 +68,6 @@ public class EventService {
     public EventFullDto getEvent(Long id) {
         return EventMapper.toFullDto(eventRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("Event not found")));
-    }
-
-    public EventFullDto getEventPublic(Long id) {
-        Event event = eventRepo.findById(id)
-                .orElseThrow(() -> new NotFoundException("Event not found"));
-        if (event.getState() != EventState.PUBLISHED) {
-            throw new NotFoundException("Event is not published");
-        }
-        return EventMapper.toFullDto(event);
     }
 
     @Transactional
@@ -171,6 +166,20 @@ public class EventService {
         return result;
     }
 
+    //PUBLIC
+
+    public EventFullDto getEventPublic(Long id, HttpServletRequest request) {
+        HitDto dto = new HitDto("ewm-service", request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now().format(dateTimeFormatter));
+        statisticsClient.sendHit(dto);
+        Event event = eventRepo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Event not found"));
+        if (event.getState() != EventState.PUBLISHED) {
+            throw new NotFoundException("Event is not published");
+        }
+        event.setViews(event.getViews() + 1);
+        return EventMapper.toFullDto(event);
+    }
+
     public List<EventShortDto> getPublicEvents(
             String text,
             List<Long> categories,
@@ -180,11 +189,24 @@ public class EventService {
             Boolean onlyAvailable,
             String sort,
             int from,
-            int size
+            int size,
+            HttpServletRequest request
     ) {
+        if (rangeStart == null && rangeEnd == null) {
+            rangeStart = LocalDateTime.of(1465, 1, 1, 0, 0);
+            rangeEnd = LocalDateTime.of(2097, 1, 1, 0, 0);
+        }
+
+        if (rangeEnd == null) {
+            rangeEnd = LocalDateTime.of(2097, 1, 1, 0, 0);
+        }
+
         if (rangeStart.isAfter(rangeEnd)) {
             throw new BadRequestException("Range start must be before range end");
         }
+
+        HitDto dto = new HitDto("ewm-service", request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now().format(dateTimeFormatter));
+        statisticsClient.sendHit(dto);
 
         Specification<Event> spec = EventSpecifications.combine(
                 EventSpecifications.published(),
@@ -202,11 +224,15 @@ public class EventService {
             pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.ASC, "eventDate"));
         }
 
-        return EventMapper.toShortDto(eventRepo.findAll(spec, pageable).getContent());
+        List<Event> events = eventRepo.findAll(spec, pageable).getContent();
+
+        events.forEach(event -> event.setViews(event.getViews() + 1));
+
+        return EventMapper.toShortDto(events);
     }
 
-    //ADMIN
 
+    //ADMIN
 
     public List<EventFullDto> getEvents(
             List<Long> users,
@@ -217,6 +243,15 @@ public class EventService {
             int from,
             int size
     ) {
+        if (rangeStart == null && rangeEnd == null) {
+            rangeStart = LocalDateTime.of(1465, 1, 1, 0, 0);
+            rangeEnd = LocalDateTime.of(2097, 1, 1, 0, 0);
+        }
+
+        if (rangeEnd == null) {
+            rangeEnd = LocalDateTime.of(2097, 1, 1, 0, 0);
+        }
+
         if (rangeStart.isAfter(rangeEnd)) {
             throw new BadRequestException("Range start must be before range end");
         }

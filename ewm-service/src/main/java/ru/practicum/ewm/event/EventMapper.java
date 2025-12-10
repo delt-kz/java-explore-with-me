@@ -43,19 +43,46 @@ public class EventMapper {
 
     public static Event fromNew(NewEventDto dto, User initiator, Category category) {
         Event event = new Event();
-        LocalDateTime eventDate = LocalDateTime.parse(dto.getEventDate(), dateTimeFormatter);
-        event.setAnnotation(dto.getAnnotation());
-        event.setDescription(dto.getDescription());
-        event.setEventDate(eventDate);
-        event.setLocation(dto.getLocation());
-        event.setPaid(dto.getPaid());
-        event.setParticipantLimit(dto.getParticipantLimit());
-        event.setRequestModeration(dto.getRequestModeration());
-        event.setTitle(dto.getTitle());
+
+        if (dto.getEventDate() != null) {
+            LocalDateTime eventDate = LocalDateTime.parse(dto.getEventDate(), dateTimeFormatter);
+            event.setEventDate(eventDate);
+        }
+
+        if (dto.getAnnotation() != null) {
+            event.setAnnotation(dto.getAnnotation());
+        }
+
+        if (dto.getDescription() != null) {
+            event.setDescription(dto.getDescription());
+        }
+
+        if (dto.getLocation() != null) {
+            event.setLocation(dto.getLocation());
+        }
+
+        if (dto.getPaid() != null) {
+            event.setPaid(dto.getPaid());
+        }
+
+        if (dto.getParticipantLimit() != null) {
+            event.setParticipantLimit(dto.getParticipantLimit());
+        }
+
+        if (dto.getRequestModeration() != null) {
+            event.setRequestModeration(dto.getRequestModeration());
+        }
+
+        if (dto.getTitle() != null) {
+            event.setTitle(dto.getTitle());
+        }
+
         event.setCategory(category);
         event.setInitiator(initiator);
+
         return event;
     }
+
 
 
     public static EventFullDto toFullDto(Event event) {

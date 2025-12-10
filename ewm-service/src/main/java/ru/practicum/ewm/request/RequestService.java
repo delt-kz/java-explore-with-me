@@ -63,6 +63,7 @@ public class RequestService {
 
         if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
             request.setStatus(RequestStatus.CONFIRMED);
+            event.setConfirmedRequests(event.getConfirmedRequests() + 1);
         }
 
         return RequestMapper.toDto(requestRepo.save(request));
