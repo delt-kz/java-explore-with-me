@@ -19,7 +19,7 @@ public class StatisticsController {
     private final StatisticsService service;
 
     @PostMapping("/hit")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.CREATED)
     public void hit(@RequestBody HitDto hit) {
         service.hit(hit);
     }
