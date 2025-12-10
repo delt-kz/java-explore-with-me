@@ -8,7 +8,7 @@ import java.util.List;
 public class EventSpecifications {
 
     public static Specification<Event> published() {
-        return (root, query, cb) -> cb.equal(root.get("state"), "PUBLISHED");
+        return (root, query, cb) -> cb.equal(root.get("state"), EventState.PUBLISHED);
     }
 
     public static Specification<Event> textSearch(String text) {

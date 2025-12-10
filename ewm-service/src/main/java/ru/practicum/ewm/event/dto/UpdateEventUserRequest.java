@@ -4,6 +4,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import ru.practicum.ewm.event.Location;
+import ru.practicum.ewm.event.StateAction;
 
 @Data
 public class UpdateEventUserRequest {
@@ -18,7 +19,7 @@ public class UpdateEventUserRequest {
     @PositiveOrZero
     private Integer participantLimit;
     private Boolean requestModeration;
-    private String stateAction;
+    private StateAction stateAction;
     @Size(min = 3, max = 120)
     private String title;
 

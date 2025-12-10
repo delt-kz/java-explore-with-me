@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.category.Category;
 import ru.practicum.ewm.category.CategoryRepository;
 import ru.practicum.ewm.event.dto.*;
+import ru.practicum.ewm.exception.BadRequestException;
 import ru.practicum.ewm.exception.BusinessLogicException;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.request.ParticipationRequest;
@@ -24,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static ru.practicum.ewm.request.RequestStatus.*;
+import static ru.practicum.ewm.util.Constants.dateTimeFormatter;
 
 @Service
 @Transactional(readOnly = true)
@@ -53,7 +55,7 @@ public class EventService {
         Event event = EventMapper.fromNew(dto, initiator, category);
 
         if (event.getEventDate().minusHours(2).isBefore(LocalDateTime.now())) {
-            throw new BusinessLogicException("Event date must be in the future");
+            throw new BadRequestException("Event date must be in the future");
         }
 
         return EventMapper.toFullDto(eventRepo.save(event));
@@ -68,7 +70,7 @@ public class EventService {
         Event event = eventRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("Event not found"));
         if (event.getState() != EventState.PUBLISHED) {
-            throw new BusinessLogicException("Event is not published");
+            throw new NotFoundException("Event is not published");
         }
         return EventMapper.toFullDto(event);
     }
@@ -81,17 +83,31 @@ public class EventService {
             throw new BusinessLogicException("You can't edit this event");
         }
 
-        if (event.getEventDate().minusHours(2).isBefore(LocalDateTime.now())) {
-            throw new BusinessLogicException("Event date must be in the future");
+        if (dto.hasEventDate() && LocalDateTime.parse(dto.getEventDate(), dateTimeFormatter).minusHours(2).isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Event date must be in the future");
         }
 
-        if (!(event.getState().equals(EventState.CANCELED) || event.getState().equals(EventState.PENDING))) {
+        if (!(event.getState() == EventState.CANCELED || event.getState() == EventState.PENDING)) {
             throw new BusinessLogicException("Event is not pending or canceled");
         }
 
         if (dto.hasCategory()) {
             event.setCategory(categoryRepo.findById(dto.getCategory())
                     .orElseThrow(() -> new NotFoundException("Category not found")));
+        }
+
+        if (dto.hasStateAction()) {
+            if (dto.getStateAction() == StateAction.CANCEL_REVIEW || dto.getStateAction() == StateAction.REJECT_EVENT) {
+                if (event.getState() == EventState.CANCELED) {
+                    throw new BusinessLogicException("Cannot cancel a canceled event");
+                }
+                event.setState(EventState.CANCELED);
+            } else if (dto.getStateAction() == StateAction.SEND_TO_REVIEW) {
+                if (event.getState() == EventState.PENDING) {
+                    throw new BusinessLogicException("Cannot send to review an event that is already pending");
+                }
+                event.setState(EventState.PENDING);
+            }
         }
 
         return EventMapper.toFullDto(eventRepo.save(EventMapper.fromUpdate(dto, event)));
@@ -166,6 +182,10 @@ public class EventService {
             int from,
             int size
     ) {
+        if (rangeStart.isAfter(rangeEnd)) {
+            throw new BadRequestException("Range start must be before range end");
+        }
+
         Specification<Event> spec = EventSpecifications.combine(
                 EventSpecifications.published(),
                 EventSpecifications.textSearch(text),
@@ -185,7 +205,7 @@ public class EventService {
         return EventMapper.toShortDto(eventRepo.findAll(spec, pageable).getContent());
     }
 
-        //ADMIN
+    //ADMIN
 
 
     public List<EventFullDto> getEvents(
@@ -197,6 +217,10 @@ public class EventService {
             int from,
             int size
     ) {
+        if (rangeStart.isAfter(rangeEnd)) {
+            throw new BadRequestException("Range start must be before range end");
+        }
+
         Specification<Event> spec = EventSpecifications.combine(
                 EventSpecifications.usersIn(users),
                 EventSpecifications.statesIn(states),
@@ -215,17 +239,17 @@ public class EventService {
     public EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest dto) {
         Event event = eventRepo.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event not found"));
+        if (dto.hasEventDate() && LocalDateTime.parse(dto.getEventDate(), dateTimeFormatter).minusHours(1).isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Event must start at least 1 hour after publication");
+        }
         if (dto.hasStateAction()) {
-            if (dto.getStateAction().equals("PUBLISH_EVENT")) {
+            if (dto.getStateAction() == StateAction.PUBLISH_EVENT) {
                 if (event.getState() != EventState.PENDING) {
                     throw new BusinessLogicException("Event can only be published when in PENDING state");
                 }
-                if (event.getEventDate().minusHours(1).isBefore(LocalDateTime.now())) {
-                    throw new BusinessLogicException("Event must start at least 1 hour after publication");
-                }
                 event.setState(EventState.PUBLISHED);
                 event.setPublishedOn(LocalDateTime.now());
-            } else if (dto.getStateAction().equals("REJECT_EVENT")) {
+            } else if (dto.getStateAction() == StateAction.REJECT_EVENT) {
                 if (event.getState() == EventState.PUBLISHED || event.getState() == EventState.CANCELED) {
                     throw new BusinessLogicException("Cannot reject published or canceled event");
                 }

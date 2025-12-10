@@ -97,7 +97,6 @@ public class EventMapper {
                 dto.getPaid(),
                 dto.getParticipantLimit(),
                 dto.getRequestModeration(),
-                dto.getStateAction(),
                 dto.getTitle());
     }
 
@@ -110,7 +109,6 @@ public class EventMapper {
                 dto.getPaid(),
                 dto.getParticipantLimit(),
                 dto.getRequestModeration(),
-                dto.getStateAction(),
                 dto.getTitle());
     }
 
@@ -119,7 +117,7 @@ public class EventMapper {
 
     private static Event updateEventBase(Event event, String annotation, String description, String eventDate,
                                          Location location, Boolean paid, Integer participantLimit,
-                                         Boolean requestModeration, String stateAction, String title) {
+                                         Boolean requestModeration, String title) {
         if (annotation != null) event.setAnnotation(annotation);
         if (description != null) event.setDescription(description);
         if (eventDate != null) event.setEventDate(LocalDateTime.parse(eventDate, dateTimeFormatter));
@@ -127,9 +125,6 @@ public class EventMapper {
         if (paid != null) event.setPaid(paid);
         if (participantLimit != null) event.setParticipantLimit(participantLimit);
         if (requestModeration != null) event.setRequestModeration(requestModeration);
-        if (stateAction != null) {
-            event.setState(stateAction.equals("SEND_TO_REVIEW") ? EventState.PENDING : EventState.CANCELED);
-        }
         if (title != null) event.setTitle(title);
         return event;
     }

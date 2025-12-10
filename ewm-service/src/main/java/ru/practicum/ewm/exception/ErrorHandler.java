@@ -26,6 +26,11 @@ public class ErrorHandler {
         return buildResponse(e, HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiError> handlBadRequest(BadRequestException e) {
+        return buildResponse(e, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ApiError> handleNotFound(NotFoundException e) {
         return buildResponse(e, HttpStatus.NOT_FOUND);
