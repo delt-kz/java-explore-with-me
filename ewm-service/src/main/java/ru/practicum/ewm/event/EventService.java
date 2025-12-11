@@ -38,7 +38,7 @@ public class EventService {
     private final UserRepository userRepo;
     private final CategoryRepository categoryRepo;
     private final RequestRepository requestRepo;
-    private final StatisticsClient statisticsClient = new StatisticsClient("http://stats-server:9090");
+    private final StatisticsClient statisticsClient;
 
     public List<EventShortDto> getAllEvents(Long userId, Integer from, Integer size) {
         if (!userRepo.existsById(userId)) {
@@ -168,6 +168,7 @@ public class EventService {
 
     //PUBLIC
 
+    @Transactional
     public EventFullDto getEventPublic(Long id, HttpServletRequest request) {
         HitDto dto = new HitDto("ewm-service", request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now().format(dateTimeFormatter));
         statisticsClient.sendHit(dto);
@@ -192,40 +193,26 @@ public class EventService {
             int size,
             HttpServletRequest request
     ) {
-        if (rangeStart == null && rangeEnd == null) {
-            rangeStart = LocalDateTime.of(1465, 1, 1, 0, 0);
-            rangeEnd = LocalDateTime.of(2097, 1, 1, 0, 0);
-        }
+        HitDto dto = new HitDto("ewm-service", request.getRequestURI(), request.getRemoteAddr(),
+                LocalDateTime.now().format(dateTimeFormatter));
+        statisticsClient.sendHit(dto);
 
-        if (rangeEnd == null) {
-            rangeEnd = LocalDateTime.of(2097, 1, 1, 0, 0);
-        }
+        Specification<Event> spec = Specification.where(EventSpecifications.published())
+                .and(EventSpecifications.textSearch(text))
+                .and(EventSpecifications.categoriesIn(categories))
+                .and(EventSpecifications.paid(paid))
+                .and(EventSpecifications.dateRange(rangeStart, rangeEnd))
+                .and(EventSpecifications.onlyAvailable(onlyAvailable));
 
-        if (rangeStart.isAfter(rangeEnd)) {
+        if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
             throw new BadRequestException("Range start must be before range end");
         }
 
-        HitDto dto = new HitDto("ewm-service", request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now().format(dateTimeFormatter));
-        statisticsClient.sendHit(dto);
-
-        Specification<Event> spec = EventSpecifications.combine(
-                EventSpecifications.published(),
-                EventSpecifications.textSearch(text),
-                EventSpecifications.categoriesIn(categories),
-                EventSpecifications.paid(paid),
-                EventSpecifications.dateRange(rangeStart, rangeEnd),
-                EventSpecifications.onlyAvailable(onlyAvailable)
-        );
-
-        Pageable pageable;
-        if ("VIEWS".equalsIgnoreCase(sort)) {
-            pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "views"));
-        } else {
-            pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.ASC, "eventDate"));
-        }
+        Pageable pageable = PageRequest.of(from / size, size,
+                "VIEWS".equalsIgnoreCase(sort) ? Sort.by(Sort.Direction.DESC, "views")
+                        : Sort.by(Sort.Direction.ASC, "eventDate"));
 
         List<Event> events = eventRepo.findAll(spec, pageable).getContent();
-
         events.forEach(event -> event.setViews(event.getViews() + 1));
 
         return EventMapper.toShortDto(events);

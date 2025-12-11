@@ -35,14 +35,18 @@ public class EventSpecifications {
 
     public static Specification<Event> dateRange(LocalDateTime start, LocalDateTime end) {
         return (root, query, cb) -> {
-            final LocalDateTime actualStart = (start != null) ? start : LocalDateTime.now();
-            if (end != null) {
-                return cb.between(root.get("eventDate"), actualStart, end);
+            if (start != null && end != null) {
+                return cb.between(root.get("eventDate"), start, end);
+            } else if (start != null) {
+                return cb.greaterThanOrEqualTo(root.get("eventDate"), start);
+            } else if (end != null) {
+                return cb.lessThanOrEqualTo(root.get("eventDate"), end);
             } else {
-                return cb.greaterThanOrEqualTo(root.get("eventDate"), actualStart);
+                return cb.conjunction(); // нет фильтра, возвращаем всё
             }
         };
     }
+
 
 
     public static Specification<Event> onlyAvailable(Boolean onlyAvailable) {
