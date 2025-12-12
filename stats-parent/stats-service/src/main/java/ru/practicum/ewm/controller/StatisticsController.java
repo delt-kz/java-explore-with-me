@@ -19,7 +19,7 @@ public class StatisticsController {
     private final StatisticsService service;
 
     @PostMapping("/hit")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.CREATED)
     public void hit(@RequestBody HitDto hit) {
         service.hit(hit);
     }
@@ -28,7 +28,7 @@ public class StatisticsController {
     public List<StatsDto> stats(@RequestParam String start,
                           @RequestParam String end,
                           @RequestParam(required = false) List<String> uris,
-                          @RequestParam(required = false) Boolean unique) {
+                          @RequestParam(defaultValue = "false") Boolean unique) {
         String decodedStart = URLDecoder.decode(start, StandardCharsets.UTF_8);
         String decodedEnd = URLDecoder.decode(end, StandardCharsets.UTF_8);
         return service.getStats(decodedStart, decodedEnd, uris, unique);

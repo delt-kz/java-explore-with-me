@@ -49,4 +49,34 @@ public interface StatisticsRepository extends JpaRepository<Hit, Long> {
 """)
     List<StatsDto> getStatsAll(LocalDateTime start, LocalDateTime end);
 
+    @Query("""
+    SELECT new ru.practicum.ewm.dto.StatsDto(h.app, h.uri, COUNT(DISTINCT h.ip))
+    FROM Hit h
+    GROUP BY h.app, h.uri
+""")
+    List<StatsDto> getStatsUniqueAllNoDate();
+
+    @Query("""
+    SELECT new ru.practicum.ewm.dto.StatsDto(h.app, h.uri, COUNT(h.ip))
+    FROM Hit h
+    GROUP BY h.app, h.uri
+""")
+    List<StatsDto> getStatsAllNoDate();
+
+    @Query("""
+    SELECT new ru.practicum.ewm.dto.StatsDto(h.app, h.uri, COUNT(DISTINCT h.ip))
+    FROM Hit h
+    WHERE h.uri IN :uris
+    GROUP BY h.app, h.uri
+""")
+    List<StatsDto> getStatsUniqueNoDate(List<String> uris);
+
+    @Query("""
+    SELECT new ru.practicum.ewm.dto.StatsDto(h.app, h.uri, COUNT(h.ip))
+    FROM Hit h
+    WHERE h.uri IN :uris
+    GROUP BY h.app, h.uri
+""")
+    List<StatsDto> getStatsNoDate(List<String> uris);
+
 }

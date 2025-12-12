@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.dto.HitDto;
 import ru.practicum.ewm.dto.StatsDto;
+import ru.practicum.ewm.exception.BadRequestException;
 import ru.practicum.ewm.mapper.HitMapper;
 import ru.practicum.ewm.model.Hit;
 import ru.practicum.ewm.repository.StatisticsRepository;
@@ -31,28 +32,49 @@ public class StatisticsService {
                                    String endString,
                                    List<String> uris,
                                    Boolean unique) {
-        LocalDateTime start = LocalDateTime.parse(startString, dateTimeFormatter);
-        LocalDateTime end = LocalDateTime.parse(endString, dateTimeFormatter);
 
+        System.out.println(uris);
+        boolean noDateFilter = (startString == null || startString.isBlank())
+                && (endString == null || endString.isBlank());
 
         List<StatsDto> stats;
 
-        if (uris == null || uris.isEmpty()) {
-            if (unique != null && unique) {
-                stats = repo.getStatsUniqueAll(start, end);
+        if (noDateFilter) {
+            if (uris == null || uris.isEmpty()) {
+                stats = (unique != null && unique)
+                        ? repo.getStatsUniqueAllNoDate()
+                        : repo.getStatsAllNoDate();
             } else {
-                stats = repo.getStatsAll(start, end);
+                stats = (unique != null && unique)
+                        ? repo.getStatsUniqueNoDate(uris)
+                        : repo.getStatsNoDate(uris);
             }
-        } else {
-            if (unique != null && unique) {
-                stats = repo.getStatsUnique(start, end, uris);
-            } else {
-                stats = repo.getStats(start, end, uris);
-            }
+            stats.sort(Comparator.comparingLong(StatsDto::getHits).reversed());
+            System.out.println(stats);
+            return stats;
         }
+
+        LocalDateTime start = LocalDateTime.parse(startString, dateTimeFormatter);
+        LocalDateTime end = LocalDateTime.parse(endString, dateTimeFormatter);
+
+        if (start.isAfter(end)) {
+            throw new BadRequestException("Start date must be before end date");
+        }
+
+        if (uris == null || uris.isEmpty()) {
+            stats = (unique != null && unique)
+                    ? repo.getStatsUniqueAll(start, end)
+                    : repo.getStatsAll(start, end);
+        } else {
+            stats = (unique != null && unique)
+                    ? repo.getStatsUnique(start, end, uris)
+                    : repo.getStats(start, end, uris);
+        }
+        System.out.println(stats);
 
         stats.sort(Comparator.comparingLong(StatsDto::getHits).reversed());
         return stats;
     }
+
 
 }
