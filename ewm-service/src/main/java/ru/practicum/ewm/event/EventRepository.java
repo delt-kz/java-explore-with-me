@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecificationExecutor<Event> {
 
     Page<Event> findAllByInitiator_Id(Long userId, Pageable pageable);
+
+    Page<Event> findAllByState(EventState state, Pageable pageable);
 }
