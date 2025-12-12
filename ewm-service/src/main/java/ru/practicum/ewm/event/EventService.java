@@ -13,6 +13,7 @@ import ru.practicum.ewm.category.Category;
 import ru.practicum.ewm.category.CategoryRepository;
 import ru.practicum.ewm.client.StatisticsClient;
 import ru.practicum.ewm.dto.HitDto;
+import ru.practicum.ewm.dto.StatsDto;
 import ru.practicum.ewm.event.dto.*;
 import ru.practicum.ewm.exception.BadRequestException;
 import ru.practicum.ewm.exception.BusinessLogicException;
@@ -26,6 +27,8 @@ import ru.practicum.ewm.user.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static ru.practicum.ewm.request.RequestStatus.*;
 import static ru.practicum.ewm.util.Constants.dateTimeFormatter;
@@ -177,7 +180,11 @@ public class EventService {
         if (event.getState() != EventState.PUBLISHED) {
             throw new NotFoundException("Event is not published");
         }
-        event.setViews(event.getViews() + 1);
+        System.out.println(request.getRequestURI());
+        List<StatsDto> stats = statisticsClient
+                .getStats(null, null, List.of(request.getRequestURI()), true);
+
+        event.setViews(stats.getFirst().getHits());
         return EventMapper.toFullDto(event);
     }
 
@@ -213,7 +220,19 @@ public class EventService {
                         : Sort.by(Sort.Direction.ASC, "eventDate"));
 
         List<Event> events = eventRepo.findAll(spec, pageable).getContent();
-        events.forEach(event -> event.setViews(event.getViews() + 1));
+        List<String> uris = events.stream().map(Event::getId).map(id -> request.getRequestURI() + "/" + id).toList();
+
+        List<StatsDto> stats = statisticsClient.getStats(null, null, uris, true);
+
+        Map<String, Long> viewMap = stats.stream()
+                .collect(Collectors.toMap(StatsDto::getUri, StatsDto::getHits));
+
+        events.forEach(event -> {
+            String eventUri = request.getRequestURI() + "/" + event.getId();
+            Long views = viewMap.getOrDefault(eventUri, 0L);
+            event.setViews(views);
+        });
+
 
         return EventMapper.toShortDto(events);
     }
@@ -230,16 +249,7 @@ public class EventService {
             int from,
             int size
     ) {
-        if (rangeStart == null && rangeEnd == null) {
-            rangeStart = LocalDateTime.of(1465, 1, 1, 0, 0);
-            rangeEnd = LocalDateTime.of(2097, 1, 1, 0, 0);
-        }
-
-        if (rangeEnd == null) {
-            rangeEnd = LocalDateTime.of(2097, 1, 1, 0, 0);
-        }
-
-        if (rangeStart.isAfter(rangeEnd)) {
+        if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
             throw new BadRequestException("Range start must be before range end");
         }
 
@@ -254,7 +264,7 @@ public class EventService {
 
         List<Event> events = eventRepo.findAll(spec, pageable).getContent();
 
-        return EventMapper.toFullDto(eventRepo.findAll(spec, pageable).getContent());
+        return EventMapper.toFullDto(events);
     }
 
     @Transactional
