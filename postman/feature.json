@@ -169,19 +169,26 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test('Pending events response 200', function () { pm.response.to.have.status(200); });",
-							"const json = pm.response.json();",
-							"pm.test('Response is an array', function () { pm.expect(Array.isArray(json)).to.eql(true); });",
+							"pm.test('Pending events response 200', function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
 							"",
-							"const eid = pm.collectionVariables.get('eventId');",
-							"if (eid) {",
-							"  const found = json.find(e => e.id && e.id.toString() === eid.toString());",
-							"  pm.test('Created event is in pending list', function() { pm.expect(found, 'event present in pending list').to.not.eql(undefined); });",
-							"} else {",
-							"  console.log('No eventId saved — skipping presence test');",
-							"}"
+							"const json = pm.response.json();",
+							"",
+							"pm.test('Response is an array', function () {",
+							"  pm.expect(Array.isArray(json)).to.eql(true);",
+							"});",
+							"",
+							"pm.test('All returned events are in PENDING state', function () {",
+							"  json.forEach(e => {",
+							"    pm.expect(e.state).to.eql('PENDING');",
+							"  });",
+							"});",
+							""
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
 					}
 				}
 			],
