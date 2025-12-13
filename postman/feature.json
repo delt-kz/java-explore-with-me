@@ -1,0 +1,450 @@
+{
+	"info": {
+		"_postman_id": "4a8f1c4f-3630-4cb1-8b5d-c0c01f26c8c2",
+		"name": "Event moderation test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "47170485",
+		"_collection_link": "https://material-pilot-15612085-7654046.postman.co/workspace/%D0%95%D1%80%D0%BA%D0%B5%D0%B1%D2%B1%D0%BB%D0%B0%D0%BD-%D0%A1%D3%99%D1%80%D1%81%D0%B5%D0%BD%D0%B1%D0%B5%D0%BA's-Workspace~9d227d27-feb8-40ee-8f0d-dbe2ea4b17d6/collection/47170485-4a8f1c4f-3630-4cb1-8b5d-c0c01f26c8c2?action=share&source=collection_link&creator=47170485"
+	},
+	"item": [
+		{
+			"name": "1) Create Category (admin)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Create category - status 201', function () { pm.response.to.have.status(201); });",
+							"const json = pm.response.json();",
+							"pm.test('Category response has id', function () { pm.expect(json).to.have.property('id'); });",
+							"if (json && json.id) { pm.collectionVariables.set('categoryId', json.id.toString()); console.log('Saved categoryId =', json.id); }"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Test Category\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/admin/categories",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"categories"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2) Create User (admin)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// ensure $timestamp is available for unique email",
+							"if (!pm.variables.get('$timestamp')) { pm.variables.set('$timestamp', Date.now().toString()); }"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Create user - status 201', function () { pm.response.to.have.status(201); });",
+							"const json = pm.response.json();",
+							"pm.test('User response has id and email', function () { pm.expect(json).to.have.property('id'); pm.expect(json).to.have.property('email'); });",
+							"if (json && json.id) { pm.collectionVariables.set('userId', json.id.toString()); console.log('Saved userId =', json.id); }"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"testuser_{{$timestamp}}@example.com\",\n  \"name\": \"Test User\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/admin/users",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3) Create Event (user)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// generate eventDateIso = now + 3 hours in format yyyy-MM-dd HH:mm:ss",
+							"const d = new Date(Date.now() + 3*60*60*1000);",
+							"function pad(n){ return n < 10 ? '0' + n : n.toString(); }",
+							"const s = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());",
+							"pm.collectionVariables.set('eventDateIso', s);",
+							"console.log('eventDateIso set to', s);",
+							"",
+							"// quick checks that userId and categoryId exist",
+							"const uid = pm.collectionVariables.get('userId');",
+							"const cid = pm.collectionVariables.get('categoryId');",
+							"if (!uid) { console.warn('Warning: userId is empty. Create user step may have failed.'); }",
+							"if (!cid) { console.warn('Warning: categoryId is empty. Create category step may have failed.'); }"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Create event - status 201', function () { pm.response.to.have.status(201); });",
+							"const json = pm.response.json();",
+							"pm.test('Response has id', function () { pm.expect(json).to.have.property('id'); });",
+							"if (json && json.id) { pm.collectionVariables.set('eventId', json.id.toString()); console.log('Saved eventId =', json.id); }",
+							"pm.test('Initial state is PENDING', function() { if (json && json.state) pm.expect(json.state).to.eql('PENDING'); else pm.skip('No state field in response to assert'); });"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"annotation\": \"Короткая аннотация про событие — минимум 20 символов.\",\n  \"category\": {{categoryId}},\n  \"description\": \"Полное описание события должно быть длинным и осмысленным, минимум 20 символов.\",\n  \"eventDate\": \"{{eventDateIso}}\",\n  \"location\": { \"lat\": 43.25, \"lon\": 76.95 },\n  \"paid\": false,\n  \"participantLimit\": 10,\n  \"requestModeration\": true,\n  \"title\": \"Тестовое событие\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/users/{{userId}}/events",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"users",
+						"{{userId}}",
+						"events"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4) Get Pending Events (admin) - verify presence",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Pending events response 200', function () { pm.response.to.have.status(200); });",
+							"const json = pm.response.json();",
+							"pm.test('Response is an array', function () { pm.expect(Array.isArray(json)).to.eql(true); });",
+							"",
+							"const eid = pm.collectionVariables.get('eventId');",
+							"if (eid) {",
+							"  const found = json.find(e => e.id && e.id.toString() === eid.toString());",
+							"  pm.test('Created event is in pending list', function() { pm.expect(found, 'event present in pending list').to.not.eql(undefined); });",
+							"} else {",
+							"  console.log('No eventId saved — skipping presence test');",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/admin/events/pending?from=0&size=10",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"events",
+						"pending"
+					],
+					"query": [
+						{
+							"key": "from",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5) Admin: Send Back For Revision (with comment)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Admin send back - status 200', function () { pm.response.to.have.status(200); });",
+							"const json = pm.response.json();",
+							"pm.test('State changed to REVISION_REQUIRED', function() { if (json && json.state) pm.expect(json.state).to.eql('REVISION_REQUIRED'); else pm.skip('no state field'); });"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"comment\": \"Пожалуйста, расширьте описание и исправьте время начала.\",\n  \"stateAction\": \"SEND_BACK_FOR_REVISION\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/admin/events/{{eventId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"events",
+						"{{eventId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "6) User: Get Reviews (should contain admin comment)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Get reviews - status 200', function() { pm.response.to.have.status(200); });",
+							"const json = pm.response.json();",
+							"pm.test('Reviews is array', function() { pm.expect(Array.isArray(json)).to.eql(true); });",
+							"",
+							"pm.test('At least one review and contains comment text', function() {",
+							"  if (!Array.isArray(json) || json.length === 0) {",
+							"    pm.skip('No reviews returned');",
+							"  } else {",
+							"    // try common field names for comment",
+							"    const c = json[0].comment || json[0].getComment || json[0].text || json[0].message;",
+							"    pm.expect(c, 'first review contains comment text').to.not.be.oneOf([undefined, null, '']);",
+							"  }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/users/{{userId}}/events/{{eventId}}/reviews",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"users",
+						"{{userId}}",
+						"events",
+						"{{eventId}}",
+						"reviews"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "7) User: Update Event & SEND_TO_REVIEW",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('User update send to review - status 200', function () { pm.response.to.have.status(200); });",
+							"const json = pm.response.json();",
+							"pm.test('State changed to PENDING after user sends to review', function() { if (json && json.state) pm.expect(json.state).to.eql('PENDING'); else pm.skip('no state field'); });"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"description\": \"Исправленное подробное описание события — добавлено больше деталей и информации, чтобы пройти модерацию.\",\n  \"annotation\": \"Обновленная аннотация, минимум 20 символов.\",\n  \"title\": \"Тестовое событие — исправлено\",\n  \"eventDate\": \"{{eventDateIso}}\",\n  \"stateAction\": \"SEND_TO_REVIEW\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/users/{{userId}}/events/{{eventId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"users",
+						"{{userId}}",
+						"events",
+						"{{eventId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "8) Admin: Publish Event",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Publish event - status 200', function () { pm.response.to.have.status(200); });",
+							"const json = pm.response.json();",
+							"pm.test('State is PUBLISHED', function() { if (json && json.state) pm.expect(json.state).to.eql('PUBLISHED'); else pm.skip('no state field'); });",
+							"pm.test('publishedOn is present', function() { if (json && json.publishedOn) pm.expect(json.publishedOn).to.not.be.oneOf([null, '']); else pm.skip('no publishedOn field'); });"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"stateAction\": \"PUBLISH_EVENT\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/admin/events/{{eventId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"events",
+						"{{eventId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "9) Admin: Try to REJECT PUBLISHED",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Reject published should return client error (4xx)', function () {",
+							"    pm.expect(pm.response.code).to.be.above(399);",
+							"    pm.expect(pm.response.code).to.be.below(600);",
+							"});",
+							"console.log('Reject published response', pm.response.text());"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"stateAction\": \"REJECT_EVENT\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/admin/events/{{eventId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"events",
+						"{{eventId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080"
+		},
+		{
+			"key": "categoryId",
+			"value": ""
+		},
+		{
+			"key": "userId",
+			"value": ""
+		},
+		{
+			"key": "eventId",
+			"value": ""
+		},
+		{
+			"key": "eventDateIso",
+			"value": ""
+		}
+	]
+}

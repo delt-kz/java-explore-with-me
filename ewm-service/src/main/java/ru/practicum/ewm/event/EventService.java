@@ -90,8 +90,8 @@ public class EventService {
             throw new BadRequestException("Event date must be in the future");
         }
 
-        if (!(event.getState() == EventState.CANCELED || event.getState() == EventState.PENDING)) {
-            throw new BusinessLogicException("Event is not pending or canceled");
+        if (!(event.getState() == EventState.CANCELED || event.getState() == EventState.PENDING || event.getState() == EventState.REVISION_REQUIRED)) {
+            throw new BusinessLogicException("Event is not in a state that allows editing");
         }
 
         if (dto.hasCategory()) {
