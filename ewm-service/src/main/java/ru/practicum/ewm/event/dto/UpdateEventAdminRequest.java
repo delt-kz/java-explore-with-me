@@ -22,6 +22,9 @@ public class UpdateEventAdminRequest {
     private StateAction stateAction;
     @Size(min = 3, max = 120)
     private String title;
+    @Size(min = 3, max = 2000)
+    private String comment;
+
 
     public boolean hasAnnotation() {
         return annotation != null;
@@ -61,5 +64,9 @@ public class UpdateEventAdminRequest {
 
     public boolean hasTitle() {
         return title != null;
+    }
+
+    public boolean hasComment() {
+        return comment != null;
     }
 }

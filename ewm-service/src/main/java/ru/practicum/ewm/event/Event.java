@@ -5,9 +5,12 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import ru.practicum.ewm.category.Category;
+import ru.practicum.ewm.event.review.EventReview;
 import ru.practicum.ewm.user.User;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "events")
@@ -41,4 +44,7 @@ public class Event {
     @Column(length = 120, nullable = false)
     private String title;
     private Long views = 0L;
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<EventReview> reviews = new ArrayList<>();
+
 }

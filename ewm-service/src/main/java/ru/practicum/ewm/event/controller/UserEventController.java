@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.event.EventService;
 import ru.practicum.ewm.event.dto.*;
+import ru.practicum.ewm.event.review.dto.EventReviewDto;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 
 import java.util.List;
@@ -54,5 +55,11 @@ public class UserEventController {
                                                          @PathVariable Long eventId,
                                                          @RequestBody EventRequestStatusUpdateRequest dto) {
         return eventService.manageRequests(userId, eventId, dto);
+    }
+
+    @GetMapping("/{eventId}/reviews")
+    public List<EventReviewDto> getReviews(@PathVariable Long userId,
+                                           @PathVariable Long eventId) {
+        return eventService.getReviews(userId, eventId);
     }
 }

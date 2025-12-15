@@ -36,4 +36,10 @@ public class AdminEventController {
         return eventService.updateEvent(eventId, dto);
     }
 
+    @GetMapping("/pending")
+    public List<EventFullDto> getPendingEvents(@RequestParam(defaultValue = "0") Integer from,
+                                         @RequestParam(defaultValue = "10") Integer size) {
+        return eventService.getPendingEvents(from, size);
+    }
+
 }

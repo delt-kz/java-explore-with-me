@@ -15,6 +15,8 @@ import ru.practicum.ewm.client.StatisticsClient;
 import ru.practicum.ewm.dto.HitDto;
 import ru.practicum.ewm.dto.StatsDto;
 import ru.practicum.ewm.event.dto.*;
+import ru.practicum.ewm.event.review.ReviewMapper;
+import ru.practicum.ewm.event.review.dto.EventReviewDto;
 import ru.practicum.ewm.exception.BadRequestException;
 import ru.practicum.ewm.exception.BusinessLogicException;
 import ru.practicum.ewm.exception.NotFoundException;
@@ -22,10 +24,13 @@ import ru.practicum.ewm.request.ParticipationRequest;
 import ru.practicum.ewm.request.RequestMapper;
 import ru.practicum.ewm.request.RequestRepository;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
+import ru.practicum.ewm.event.review.EventReview;
+import ru.practicum.ewm.event.review.ReviewStatus;
 import ru.practicum.ewm.user.User;
 import ru.practicum.ewm.user.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -85,8 +90,8 @@ public class EventService {
             throw new BadRequestException("Event date must be in the future");
         }
 
-        if (!(event.getState() == EventState.CANCELED || event.getState() == EventState.PENDING)) {
-            throw new BusinessLogicException("Event is not pending or canceled");
+        if (!(event.getState() == EventState.CANCELED || event.getState() == EventState.PENDING || event.getState() == EventState.REVISION_REQUIRED)) {
+            throw new BusinessLogicException("Event is not in a state that allows editing");
         }
 
         if (dto.hasCategory()) {
@@ -167,6 +172,17 @@ public class EventService {
         result.setRejectedRequests(rejected);
 
         return result;
+    }
+
+    public List<EventReviewDto> getReviews(Long userId, Long eventId) {
+        Event event = eventRepo.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event not found"));
+
+        if (!event.getInitiator().getId().equals(userId)) {
+            throw new BusinessLogicException("You can't manage reviews for this event");
+        }
+
+        return ReviewMapper.toDto(event.getReviews());
     }
 
     //PUBLIC
@@ -286,8 +302,30 @@ public class EventService {
                     throw new BusinessLogicException("Cannot reject published or canceled event");
                 }
                 event.setState(EventState.CANCELED);
+            } else if (dto.getStateAction() == StateAction.SEND_BACK_FOR_REVISION) {
+                if (event.getState() != EventState.PENDING) {
+                    throw new BusinessLogicException("Event can only be returned for revision from PENDING state");
+                }
+                if (dto.getComment() == null || dto.getComment().trim().isEmpty()) {
+                    throw new BadRequestException("Comment must be provided when returning event for revision");
+                }
+
+                event.setState(EventState.REVISION_REQUIRED);
+
+                EventReview review = new EventReview();
+                review.setEvent(event);
+                review.setComment(dto.getComment().toString());
+                review.setStatus(ReviewStatus.RETURNED);
+                review.setCreatedAt(LocalDateTime.now());
+
+                if (event.getReviews() == null) {
+                    event.setReviews(new ArrayList<>());
+                }
+                event.getReviews().add(review);
             }
+
         }
+
 
         if (dto.hasCategory()) {
             event.setCategory(categoryRepo.findById(dto.getCategory())
@@ -297,4 +335,12 @@ public class EventService {
         return EventMapper.toFullDto(eventRepo.save(EventMapper.fromUpdate(dto, event)));
     }
 
+
+    public List<EventFullDto> getPendingEvents(Integer from, Integer size) {
+        PageRequest pageRequest = PageRequest.of(from / size, size);
+
+        Page<Event> events = eventRepo.findAllByState(EventState.PENDING, pageRequest);
+
+        return EventMapper.toFullDto(events.getContent());
+    }
 }
