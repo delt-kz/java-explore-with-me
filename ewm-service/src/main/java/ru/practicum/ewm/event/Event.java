@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 import ru.practicum.ewm.category.Category;
 import ru.practicum.ewm.event.review.EventReview;
 import ru.practicum.ewm.user.User;

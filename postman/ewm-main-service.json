@@ -1,10 +1,10 @@
 {
   "info": {
-    "_postman_id": "acad9211-0232-4e9a-87d3-f27cabd66dfa",
+    "_postman_id": "4f622f31-328a-4506-95bd-66359cfbe749",
     "name": "Test Explore With Me - Main service",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "47170485",
-    "_collection_link": "https://go.postman.co/collection/47170485-acad9211-0232-4e9a-87d3-f27cabd66dfa?source=collection_link"
+    "_exporter_id": "23073145",
+    "_collection_link": "https://universal-shadow-295426.postman.co/workspace/My-Workspace~4200f6aa-0504-44b1-8a1d-707d0dcbd5ce/collection/13708500-4f622f31-328a-4506-95bd-66359cfbe749?action=share&source=collection_link&creator=23073145"
   },
   "item": [
     {
@@ -338,7 +338,7 @@
                         }
                       ]
                     },
-                    "description": "Обратите внимание:\n\n- это публичный эндпоинт, соответственно в выдаче должны быть только опубликованные события\n- текстовый поиск (по аннотации и подробному описанию) должен быть без учета регистра букв\n- если в запросе не указан диапазон дат \\[rangeStart-rangeEnd\\], то нужно выгружать события, которые произойдут позже текущей даты и времени\n- информация о каждом событии должна включать в себя количество просмотров и количество уже одобренных заявок на участие\n- информацию о том, что по этому эндпоинту был осуществлен и обработан запрос, нужно сохранить в сервисе статистики"
+                    "description": "Обратите внимание: \n- это публичный эндпоинт, соответственно в выдаче должны быть только опубликованные события\n- текстовый поиск (по аннотации и подробному описанию) должен быть без учета регистра букв\n- если в запросе не указан диапазон дат [rangeStart-rangeEnd], то нужно выгружать события, которые произойдут позже текущей даты и времени\n- информация о каждом событии должна включать в себя количество просмотров и количество уже одобренных заявок на участие\n- информацию о том, что по этому эндпоинту был осуществлен и обработан запрос, нужно сохранить в сервисе статистики"
                   },
                   "response": []
                 }
@@ -10856,7 +10856,7 @@
                   "        pm.request.body.update({\r",
                   "            mode: 'raw',\r",
                   "            raw: JSON.stringify({\r",
-                  "                eventDate : \"2024-10-11 23:10:05\"\r",
+                  "                eventDate : \"2124-10-11 23:10:05\"\r",
                   "            }),\r",
                   "            options: { raw: { language: 'json' } }\r",
                   "        });\r",
@@ -14379,7 +14379,7 @@
           "    }",
           "",
           "    async acceptParticipationRequest(eventId, userId, reqId, verbose=null) {",
-          "        return this.patch('/users/' + userId + '/events/' + eventId + '/requests/', {requestIds:[reqId], status: \"CONFIRMED\"}, \"Ошибка при принятии заявки на участие в событии\", verbose);",
+          "        return this.patch('/users/' + userId + '/events/' + eventId + '/requests', {requestIds:[reqId], status: \"CONFIRMED\"}, \"Ошибка при принятии заявки на участие в событии\", verbose);",
           "    }",
           "",
           "    async findCategory(catId, verbose=null) {",
