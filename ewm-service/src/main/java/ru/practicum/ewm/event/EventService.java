@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.category.Category;
@@ -28,6 +29,7 @@ import ru.practicum.ewm.event.review.EventReview;
 import ru.practicum.ewm.event.review.ReviewStatus;
 import ru.practicum.ewm.user.User;
 import ru.practicum.ewm.user.UserRepository;
+import ru.practicum.ewm.util.CurrentUser;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -47,11 +49,10 @@ public class EventService {
     private final CategoryRepository categoryRepo;
     private final RequestRepository requestRepo;
     private final StatisticsClient statisticsClient;
+    private final CurrentUser currentUser;
 
-    public List<EventShortDto> getAllEvents(Long userId, Integer from, Integer size) {
-        if (!userRepo.existsById(userId)) {
-            throw new NotFoundException("User not found");
-        }
+    public List<EventShortDto> getAllEvents(Integer from, Integer size) {
+        Long userId = currentUser.getUserId();
         PageRequest pageRequest = PageRequest.of(from / size, size);
 
         Page<Event> events = eventRepo.findAllByInitiator_Id(userId, pageRequest);
@@ -59,9 +60,10 @@ public class EventService {
     }
 
     @Transactional
-    public EventFullDto createEvent(Long userId, NewEventDto dto) {
+    public EventFullDto createEvent(NewEventDto dto) {
         Category category = categoryRepo.findById(dto.getCategory())
                 .orElseThrow(() -> new NotFoundException("Category not found"));
+        Long userId = currentUser.getUserId();
         User initiator = userRepo.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
         Event event = EventMapper.fromNew(dto, initiator, category);
@@ -79,9 +81,10 @@ public class EventService {
     }
 
     @Transactional
-    public EventFullDto updateEvent(Long userId, Long eventId, UpdateEventUserRequest dto) {
+    public EventFullDto updateEvent(Long eventId, UpdateEventUserRequest dto) {
         Event event = eventRepo.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event not found"));
+        Long userId = currentUser.getUserId();
         if (!event.getInitiator().getId().equals(userId)) {
             throw new BusinessLogicException("You can't edit this event");
         }
@@ -116,15 +119,16 @@ public class EventService {
         return EventMapper.toFullDto(eventRepo.save(EventMapper.fromUpdate(dto, event)));
     }
 
-    public List<ParticipationRequestDto> getEventRequests(Long userId, Long eventId) {
+    public List<ParticipationRequestDto> getEventRequests(Long eventId) {
         return RequestMapper.toDto(requestRepo.findAllByEvent_Id(eventId));
     }
 
 
     @Transactional
-    public EventRequestStatusUpdateResult manageRequests(Long userId, Long eventId, EventRequestStatusUpdateRequest dto) {
+    public EventRequestStatusUpdateResult manageRequests(Long eventId, EventRequestStatusUpdateRequest dto) {
         Event event = eventRepo.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event not found"));
+        Long userId = currentUser.getUserId();
 
         if (!event.getInitiator().getId().equals(userId)) {
             throw new BusinessLogicException("You can't manage requests for this event");
@@ -174,9 +178,10 @@ public class EventService {
         return result;
     }
 
-    public List<EventReviewDto> getReviews(Long userId, Long eventId) {
+    public List<EventReviewDto> getReviews(Long eventId) {
         Event event = eventRepo.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event not found"));
+        Long userId = currentUser.getUserId();
 
         if (!event.getInitiator().getId().equals(userId)) {
             throw new BusinessLogicException("You can't manage reviews for this event");

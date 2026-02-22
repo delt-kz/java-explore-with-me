@@ -14,6 +14,9 @@ import ru.practicum.ewm.user.Role;
 import ru.practicum.ewm.user.User;
 import ru.practicum.ewm.user.UserRepository;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -29,8 +32,10 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
                 .build();
-        userRepo.save(user);
-        String token = jwtService.generateToken(user);
+        User savedUser = userRepo.save(user);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", savedUser.getId());
+        String token = jwtService.generateToken(claims, user);
         return AuthenticationResponse.builder()
                 .token(token)
                 .build();
@@ -45,7 +50,9 @@ public class AuthenticationService {
         );
         User user = userRepo.findByEmail(request.getEmail())
                 .orElseThrow(() -> new NotFoundException("User not found"));
-        String token = jwtService.generateToken(user);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", user.getId());
+        String token = jwtService.generateToken(claims, user);
         return AuthenticationResponse.builder()
                 .token(token)
                 .build();
