@@ -1,5 +1,6 @@
 package ru.practicum.ewm.security.auth;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,12 +17,12 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    public AuthenticationResponse register(@RequestBody RegisterRequest request) {
+    public AuthenticationResponse register(@Valid @RequestBody RegisterRequest request) {
         return authenticationService.register(request);
     }
 
     @PostMapping("/authenticate")
-    public AuthenticationResponse authenticate(@RequestBody AuthenticationRequest request) {
+    public AuthenticationResponse authenticate(@Valid @RequestBody AuthenticationRequest request) {
         return authenticationService.authenticate(request);
     }
 }
