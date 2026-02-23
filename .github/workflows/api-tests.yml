@@ -1,16 +1,16 @@
-name: Explore With Me API Tests
+name: CI
 
 on:
+  push:
+    branches: [ main ]
   pull_request:
-  workflow_call:
 
 jobs:
-  build-ewm:
-
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout target repo
+      - name: Checkout project
         uses: actions/checkout@v4
 
       - name: Set up JDK 21
@@ -20,103 +20,50 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Checkout tests
-        uses: actions/checkout@v4
-        with:
-          repository: 'yandex-praktikum/java-explore-with-me'
-          ref: ${{ github.event.pull_request.head.ref }}
-          path: tests
+      - name: Build project
+        run: mvn clean install --no-transfer-progress
 
-      - name: Check and Build application
+      - name: Build docker
+        run: docker compose build
+
+      - name: Run application
         run: |
-          cp -rf ./tests/checkstyle.xml ./checkstyle.xml
-          cp -rf ./tests/suppressions.xml ./suppressions.xml
-          mvn install -P check --no-transfer-progress
-          docker compose build
+          docker compose up -d
+          sleep 25
+          docker compose ps
 
-      - name: Install Node
+      - name: Wait for stats-server
+        run: |
+          echo "Waiting for stats-server to be healthy..."
+          until curl --fail http://localhost:9090/actuator/health | grep UP; do
+            sleep 2
+          done
+
+      - name: Wait for ewm-service
+        run: |
+          echo "Waiting for ewm-service to be healthy..."
+          until curl --fail http://localhost:8080/actuator/health | grep UP; do
+            sleep 2
+          done
+
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '16.x'
+          node-version: '18'
 
       - name: Install newman
-        run: |
-          npm install -g newman
-          npm install -g newman-reporter-htmlextra
+        run: npm install -g newman
 
-      - name: Run Stat Application
-        if: contains(github.head_ref, 'stat')
-        run: |
-          docker compose up --detach
-          chmod a+x ./tests/.github/workflows/wait-for-it.sh
-          ./tests/.github/workflows/wait-for-it.sh -t 60 localhost:9090
-          docker compose ps
-          docker compose logs
+      - name: Run ewm-main-service tests
+        run: newman run postman/ewm-main-service.json
 
-      - name: Run Application
-        if:  ${{ !contains(github.head_ref, 'stat') }}
-        run: |
-          docker compose up --detach
-          chmod a+x ./tests/.github/workflows/wait-for-it.sh
-          ./tests/.github/workflows/wait-for-it.sh -t 60 localhost:8080
-          ./tests/.github/workflows/wait-for-it.sh -t 60 localhost:9090
-          docker compose ps
-          docker compose logs
+      - name: Run ewm-stat-service tests
+        run: newman run postman/ewm-stat-service.json
 
-      - name: Run POSTMAN tests on ewm-main-service
-        if:  ${{ !contains(github.head_ref, 'stat') }}
-        run: >
-          newman run ./postman/ewm-main-service.json 
-          --delay-request 50 -r cli,htmlextra 
-          --verbose --color on --reporter-htmlextra-darkTheme 
-          --reporter-htmlextra-export reports/ewm_main_report.html
-          --reporter-htmlextra-title "Отчет по тестам основного сервиса"
-          --reporter-htmlextra-logs true
-          --reporter-htmlextra-template ./tests/.github/workflows/dashboard-template.hbs
+      - name: Run feature tests
+        run: newman run postman/feature.json
 
-      - name: Run POSTMAN tests on ewm-stat-service
-        run: >
-          newman run ./postman/ewm-stat-service.json 
-          --delay-request 50 -r cli,htmlextra 
-          --verbose --color on --reporter-htmlextra-darkTheme 
-          --reporter-htmlextra-export reports/ewm_stats_report.html
-          --reporter-htmlextra-title "Отчет по тестам сервиса статистики"
-          --reporter-htmlextra-logs true
-          --reporter-htmlextra-template ./tests/.github/workflows/dashboard-template.hbs
+      - name: Shutdown containers
+        if: always()
+        run: docker compose down
 
-      - name: Run POSTMAN tests on feature
-        if: contains(github.head_ref, 'feature')
-        run: >
-          newman run ./postman/feature.json 
-          --delay-request 50 -r cli,htmlextra 
-          --verbose --color on --reporter-htmlextra-darkTheme 
-          --reporter-htmlextra-export reports/ewm_feature_report.html
-          --reporter-htmlextra-title "Отчет по тестам сервиса статистики"
-          --reporter-htmlextra-logs true
-          --reporter-htmlextra-template ./tests/.github/workflows/dashboard-template.hbs
-
-      - name: Compose logs
-        if: ${{ failure() }}
-        run: |
-          docker compose ps
-          docker compose stop
-          docker compose logs -f stats-server >> ./stats-server.log
-          docker compose logs -f ewm-service >> ./ewm-service.log
-
-      - name: Upload log artifact
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ewm-log
-          path: ./*.log
-
-      - name: Archive artifacts
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: postman_tests_report
-          path: reports
-
-      - name: Compose down
-        run: |
-          docker compose down
