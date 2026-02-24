@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.user.dto.NewUserRequest;
 import ru.practicum.ewm.user.dto.UserDto;
 
@@ -41,5 +42,10 @@ public class UserService {
     @Transactional
     public void deleteUser(Long id) {
         userRepo.deleteById(id);
+    }
+
+    public User getEntityByEmail(String email) {
+        return userRepo.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("User not found"));
     }
 }

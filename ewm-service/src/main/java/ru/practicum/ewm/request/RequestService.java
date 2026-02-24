@@ -11,6 +11,7 @@ import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 import ru.practicum.ewm.user.User;
 import ru.practicum.ewm.user.UserRepository;
+import ru.practicum.ewm.util.CurrentUser;
 
 import java.util.List;
 
@@ -21,11 +22,10 @@ public class RequestService {
     private final UserRepository userRepo;
     private final RequestRepository requestRepo;
     private final EventRepository eventRepo;
+    private final CurrentUser currentUser;
 
-    public List<ParticipationRequestDto> getRequests(Long userId) {
-        if (!userRepo.existsById(userId)) {
-            throw new NotFoundException("User not found");
-        }
+    public List<ParticipationRequestDto> getRequests() {
+        Long userId = currentUser.getUserId();
 
         return requestRepo.findAllByRequester_Id(userId)
                 .stream()
@@ -34,7 +34,8 @@ public class RequestService {
     }
 
     @Transactional
-    public ParticipationRequestDto createRequest(Long userId, Long eventId) {
+    public ParticipationRequestDto createRequest(Long eventId) {
+        Long userId = currentUser.getUserId();
         Event event = eventRepo.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event not found"));
         User user = userRepo.findById(userId)
@@ -70,7 +71,8 @@ public class RequestService {
     }
 
     @Transactional
-    public ParticipationRequestDto cancelRequest(Long userId, Long requestId) {
+    public ParticipationRequestDto cancelRequest(Long requestId) {
+        Long userId = currentUser.getUserId();
 
         ParticipationRequest request = requestRepo.findById(requestId)
                 .orElseThrow(() -> new NotFoundException("Request not found"));

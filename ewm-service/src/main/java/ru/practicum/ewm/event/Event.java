@@ -40,6 +40,8 @@ public class Event {
     private Integer participantLimit = 0;
     private LocalDateTime publishedOn;
     private Boolean requestModeration = true;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "state", nullable = false)
     private EventState state = EventState.PENDING;
     @Column(length = 120, nullable = false)
     private String title;
