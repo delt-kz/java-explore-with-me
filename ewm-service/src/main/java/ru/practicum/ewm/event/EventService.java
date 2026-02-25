@@ -42,7 +42,7 @@ import static ru.practicum.ewm.util.Constants.dateTimeFormatter;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class EventService {
+public class    EventService {
     private final EventRepository eventRepo;
     private final UserRepository userRepo;
     private final CategoryRepository categoryRepo;
@@ -62,6 +62,7 @@ public class EventService {
     public EventFullDto createEvent(NewEventDto dto) {
         Category category = categoryRepo.findById(dto.getCategory())
                 .orElseThrow(() -> new NotFoundException("Category not found"));
+
         Long userId = currentUser.getUserId();
         User initiator = userRepo.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));

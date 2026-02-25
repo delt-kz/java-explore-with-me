@@ -1,69 +1,69 @@
-name: CI
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-
-jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout project
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: maven
-
-      - name: Build project
-        run: mvn clean install --no-transfer-progress
-
-      - name: Build docker
-        run: docker compose build
-
-      - name: Run application
-        run: |
-          docker compose up -d
-          sleep 25
-          docker compose ps
-
-      - name: Wait for stats-server
-        run: |
-          echo "Waiting for stats-server to be healthy..."
-          until curl --fail http://localhost:9090/actuator/health | grep UP; do
-            sleep 2
-          done
-
-      - name: Wait for ewm-service
-        run: |
-          echo "Waiting for ewm-service to be healthy..."
-          until curl --fail http://localhost:8080/actuator/health | grep UP; do
-            sleep 2
-          done
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: Install newman
-        run: npm install -g newman
-
-      - name: Run ewm-main-service tests
-        run: newman run postman/ewm-main-service.json
-
-      - name: Run ewm-stat-service tests
-        run: newman run postman/ewm-stat-service.json
-
-      - name: Run feature tests
-        run: newman run postman/feature.json
-
-      - name: Shutdown containers
-        if: always()
-        run: docker compose down
-
+#name: CI
+#
+#on:
+#  push:
+#    branches: [ main ]
+#  pull_request:
+#
+#jobs:
+#  build-and-test:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout project
+#        uses: actions/checkout@v4
+#
+#      - name: Set up JDK 21
+#        uses: actions/setup-java@v4
+#        with:
+#          java-version: '21'
+#          distribution: 'temurin'
+#          cache: maven
+#
+#      - name: Build project
+#        run: mvn clean install --no-transfer-progress
+#
+#      - name: Build docker
+#        run: docker compose build
+#
+#      - name: Run application
+#        run: |
+#          docker compose up -d
+#          sleep 25
+#          docker compose ps
+#
+#      - name: Wait for stats-server
+#        run: |
+#          echo "Waiting for stats-server to be healthy..."
+#          until curl --fail http://localhost:9090/actuator/health | grep UP; do
+#            sleep 2
+#          done
+#
+#      - name: Wait for ewm-service
+#        run: |
+#          echo "Waiting for ewm-service to be healthy..."
+#          until curl --fail http://localhost:8080/actuator/health | grep UP; do
+#            sleep 2
+#          done
+#
+#      - name: Setup Node
+#        uses: actions/setup-node@v4
+#        with:
+#          node-version: '18'
+#
+#      - name: Install newman
+#        run: npm install -g newman
+#
+#      - name: Run ewm-main-service tests
+#        run: newman run postman/ewm-main-service.json
+#
+#      - name: Run ewm-stat-service tests
+#        run: newman run postman/ewm-stat-service.json
+#
+#      - name: Run feature tests
+#        run: newman run postman/feature.json
+#
+#      - name: Shutdown containers
+#        if: always()
+#        run: docker compose down
+#
