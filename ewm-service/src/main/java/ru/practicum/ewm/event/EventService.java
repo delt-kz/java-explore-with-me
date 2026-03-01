@@ -201,7 +201,6 @@ public class    EventService {
         if (event.getState() != EventState.PUBLISHED) {
             throw new NotFoundException("Event is not published");
         }
-        System.out.println(request.getRequestURI());
         List<StatsDto> stats = statisticsClient
                 .getStats(null, null, List.of(request.getRequestURI()), true);
 

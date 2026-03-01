@@ -97,13 +97,15 @@ public class EventServiceTest {
         when(currentUser.getUserId()).thenReturn(1L);
         when(categoryRepo.findById(1L)).thenReturn(Optional.of(category));
         when(userRepo.findById(1L)).thenReturn(Optional.of(user));
-        when(eventRepo.save(any(Event.class))).thenReturn(event);
+        when(eventRepo.save(any(Event.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         EventFullDto result = eventService.createEvent(newEventDto);
 
         assertNotNull(result);
-        assertEquals(event.getId(), result.getId());
         assertEquals(event.getTitle(), result.getTitle());
+        assertEquals(event.getDescription(), result.getDescription());
+        assertEquals(event.getLocation().getLat(), result.getLocation().getLat());
+        assertEquals(event.getDescription(), result.getDescription());
         verify(eventRepo, times(1)).save(any(Event.class));
     }
 
