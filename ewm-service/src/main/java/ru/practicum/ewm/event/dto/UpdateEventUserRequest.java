@@ -2,11 +2,17 @@ package ru.practicum.ewm.event.dto;
 
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.practicum.ewm.event.Location;
 import ru.practicum.ewm.event.StateAction;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UpdateEventUserRequest {
     @Size(min = 20, max = 2000)
     private String annotation;

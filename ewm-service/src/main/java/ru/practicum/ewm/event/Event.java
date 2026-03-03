@@ -1,9 +1,7 @@
 package ru.practicum.ewm.event;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import ru.practicum.ewm.category.Category;
 import ru.practicum.ewm.event.review.EventReview;
 import ru.practicum.ewm.user.User;
@@ -16,7 +14,10 @@ import java.util.List;
 @Table(name = "events")
 @Getter
 @Setter
+@Builder
 @ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
