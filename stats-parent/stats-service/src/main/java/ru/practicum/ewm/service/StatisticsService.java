@@ -33,7 +33,6 @@ public class StatisticsService {
                                    List<String> uris,
                                    Boolean unique) {
 
-        System.out.println(uris);
         boolean noDateFilter = (startString == null || startString.isBlank())
                 && (endString == null || endString.isBlank());
 
@@ -50,7 +49,6 @@ public class StatisticsService {
                         : repo.getStatsNoDate(uris);
             }
             stats.sort(Comparator.comparingLong(StatsDto::getHits).reversed());
-            System.out.println(stats);
             return stats;
         }
 
@@ -70,7 +68,6 @@ public class StatisticsService {
                     ? repo.getStatsUnique(start, end, uris)
                     : repo.getStats(start, end, uris);
         }
-        System.out.println(stats);
 
         stats.sort(Comparator.comparingLong(StatsDto::getHits).reversed());
         return stats;
