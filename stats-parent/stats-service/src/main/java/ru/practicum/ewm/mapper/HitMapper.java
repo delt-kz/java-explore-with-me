@@ -16,6 +16,9 @@ public class HitMapper {
         hit.setIp(dto.getIp());
         hit.setUri(dto.getUri());
         hit.setApp(dto.getApp());
+        if (dto.getTimestamp() != null && !dto.getTimestamp().isBlank()) {
+            hit.setTimestamp(java.time.LocalDateTime.parse(dto.getTimestamp(), dateTimeFormatter));
+        }
         return hit;
     }
 
