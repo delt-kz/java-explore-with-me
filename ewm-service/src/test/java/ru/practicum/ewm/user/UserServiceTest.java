@@ -34,12 +34,11 @@ public class UserServiceTest {
 
     @BeforeEach
     void setUp() {
-        user = User.builder()
-                .id(1L)
-                .name("Test User")
-                .email("test@test.com")
-                .role(Role.USER)
-                .build();
+        user = new User();
+        user.setId(1L);
+        user.setName("Test User");
+        user.setEmail("test@test.com");
+        user.setRole(Role.USER);
 
         newUserRequest = new NewUserRequest();
         newUserRequest.setName("Test User");
