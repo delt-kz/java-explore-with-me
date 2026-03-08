@@ -42,17 +42,20 @@ public class CompilationServiceTest {
 
     @BeforeEach
     void setUp() {
-        event = Event.builder()
-                .id(1L)
-                .title("Event Title")
-                .eventDate(LocalDateTime.now().plusDays(1))
-                .build();
-        // minimal linked objects required by mappers
+        event = new Event();
+        event.setId(1L);
+        event.setTitle("Event Title");
+        event.setEventDate(LocalDateTime.now().plusDays(1));
+
         Category category = new Category();
         category.setId(100L);
         category.setName("Cat");
         event.setCategory(category);
-        User initiator = User.builder().id(200L).name("Init").email("i@i.com").build();
+        User initiator = new User();
+        initiator.setId(200L);
+        initiator.setName("Init");
+        initiator.setEmail("i@i.com");
+
         event.setInitiator(initiator);
 
         compilation = new Compilation();

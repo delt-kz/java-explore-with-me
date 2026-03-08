@@ -45,16 +45,21 @@ public class RequestServiceTest {
 
     @BeforeEach
     void setUp() {
-        requester = User.builder().id(1L).name("Requester").build();
-        initiator = User.builder().id(2L).name("Initiator").build();
-        event = Event.builder()
-                .id(1L)
-                .initiator(initiator)
-                .state(EventState.PUBLISHED)
-                .participantLimit(10)
-                .confirmedRequests(0)
-                .requestModeration(true)
-                .build();
+        requester = new User();
+        requester.setId(1L);
+        requester.setName("Requester");
+        initiator = new User();
+        initiator.setId(2L);
+        initiator.setName("Initiator");
+
+        event = new Event();
+        event.setId(1L);
+        event.setInitiator(initiator);
+        event.setState(EventState.PUBLISHED);
+        event.setParticipantLimit(10);
+        event.setConfirmedRequests(0);
+        event.setRequestModeration(true);
+
         request = new ParticipationRequest();
         request.setId(1L);
         request.setRequester(requester);

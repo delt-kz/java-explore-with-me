@@ -14,7 +14,6 @@ import java.util.List;
 @Table(name = "events")
 @Getter
 @Setter
-@Builder
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
