@@ -42,7 +42,7 @@ import static ru.practicum.ewm.util.Constants.dateTimeFormatter;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class    EventService {
+public class EventService {
     private final EventRepository eventRepo;
     private final UserRepository userRepo;
     private final CategoryRepository categoryRepo;

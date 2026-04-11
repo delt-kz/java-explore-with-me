@@ -1,7 +1,8 @@
 -- USERS
 INSERT INTO users (email, name, password, role) VALUES
-                                                    ('admin@test.com', 'Admin', 'adminpass', 'ADMIN'),
-                                                    ('user1@test.com', 'Alice', 'pass1', 'USER'),
+                                                    ('admin@admin.com', 'admin', '$2a$10$5Y81ar6ehID9yMjyHm9uHubaua7n/tYq0pZKUyx3h8MN.6LXfhA8u', 'ADMIN'),
+                                                    ('user1@test.com', 'Alice In Finland', 'pass1', 'USER'),
+                                                    ('user3@test.com', 'Alice', 'pass1', 'USER'),
                                                     ('user2@test.com', 'Bob', 'pass2', 'USER');
 
 ---------------------------------------------------------------------
@@ -36,7 +37,7 @@ INSERT INTO events (
           1,
           'Spring Boot backend meetup',
           CURRENT_TIMESTAMP + INTERVAL '7 day',
-          2,
+          1,
           51.1605,
           71.4704,
           false,
@@ -51,7 +52,7 @@ INSERT INTO events (
           2,
           '5km friendly run',
           CURRENT_TIMESTAMP + INTERVAL '3 day',
-          3,
+          1,
           51.15,
           71.44,
           false,
@@ -66,7 +67,7 @@ INSERT INTO events (
           3,
           'Live jam session',
           CURRENT_TIMESTAMP + INTERVAL '10 day',
-          2,
+          1,
           51.17,
           71.43,
           true,
@@ -81,7 +82,7 @@ INSERT INTO events (
           4,
           'Numerical methods lecture',
           CURRENT_TIMESTAMP + INTERVAL '5 day',
-          3,
+          1,
           51.18,
           71.41,
           false,
