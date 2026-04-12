@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Prata&display=swap');
+
+:root {
+  color-scheme: light;
+  font-family: 'Manrope', 'Segoe UI', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --font-sans: 'Manrope', 'Segoe UI', sans-serif;
+  --font-display: 'Prata', Georgia, serif;
+
+  --color-bg: #f4efe6;
+  --color-bg-accent: #ece2d2;
+  --color-card: rgba(255, 251, 245, 0.84);
+  --color-card-strong: #fffaf2;
+  --color-text: #2f261d;
+  --color-muted: #6f6254;
+  --color-border: rgba(72, 55, 35, 0.12);
+  --color-border-strong: rgba(72, 55, 35, 0.24);
+  --color-accent: #7b572c;
+  --color-accent-strong: #60401b;
+  --shadow-soft: 0 18px 40px rgba(89, 70, 45, 0.08);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  color: var(--color-text);
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 26%),
+    linear-gradient(180deg, var(--color-bg-accent), var(--color-bg));
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(123, 87, 44, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(123, 87, 44, 0.03) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.4), transparent 85%);
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+a,
+button {
+  color: inherit;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.08;
+}
+
+h1 {
+  font-size: clamp(2.8rem, 6vw, 4.8rem);
+}
+
+h2 {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+}
+
+h3 {
+  font-size: 1.45rem;
+}
+
+p {
+  margin: 0;
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
