@@ -52,9 +52,7 @@ function AuthPage({ session, onAuthenticated }: AuthPageProps) {
           <span className="eyebrow">Авторизация</span>
           <h1>{mode === 'register' ? 'Создай пользователя' : 'Вернись в кабинет'}</h1>
           <p className="hero-panel__lead">
-            Здесь фронт работает с твоими `POST /auth/register` и `POST /auth/authenticate`.
-            После входа JWT сохраняется в браузере, а личные страницы начинают ходить в
-            защищённые endpoint&apos;ы.
+            Регистрация и вход реализованы через JWT
           </p>
 
           <div className="mode-switch">

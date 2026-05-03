@@ -127,11 +127,9 @@ function HomePage({ session }: HomePageProps) {
       <section className="hero-panel">
         <div className="hero-panel__content">
           <span className="eyebrow">Публичная витрина</span>
-          <h1>Афиша, которая показывает твой бэкенд через реальные сценарии.</h1>
+          <h1>Сайт показывает бэкенд через реальные сценарии</h1>
           <p className="hero-panel__lead">
-            Пользователь видит события, фильтрует их, открывает карточку, записывается на
-            участие и заходит в свой кабинет. Всё просто визуально, но по-настоящему
-            опирается на твои endpoint&apos;ы.
+            Сайт реализует не все эндпойнты, только пользовательские сценарии. Эндпойнты для админов не реализованы. 
           </p>
 
           <div className="hero-panel__actions">
@@ -153,11 +151,11 @@ function HomePage({ session }: HomePageProps) {
           <article className="info-card">
             <span>Подборок</span>
             <strong>{compilations.length}</strong>
-            <p>Показывают, что проект умеет не только отдавать списки, но и собирать витрины.</p>
+            <p>Бэк умеет не только отдавать списки, но и собирать витрины.</p>
           </article>
           <article className="info-card">
             <span>Текущий режим</span>
-            <strong>{session ? 'Авторизован' : 'Гость'}</strong>
+            <strong>{session ? 'Вошел' : 'Гость'}</strong>
             <p>После входа поверх афиши открываются личные действия пользователя.</p>
           </article>
         </div>
