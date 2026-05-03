@@ -87,3 +87,17 @@ http://localhost:8081
 ```bash
 docker build --build-arg VITE_API_BASE_URL=http://localhost:8080 -t ewm-frontend .
 ```
+
+### Docker Compose
+
+Если нужен самый короткий запуск через готовый compose-файл из папки `frontend`:
+
+```bash
+docker compose up --build
+```
+
+Тогда фронт будет доступен по адресу:
+
+```text
+http://localhost
+```
