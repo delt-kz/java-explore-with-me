@@ -1,3 +1,31 @@
 spring:
   flyway:
     locations: classpath:db/migration, classpath:db/dev-migration
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5433/ewm
+    username: ewm
+    password: ewm
+
+
+statistics:
+  client:
+    url: http://localhost:9090
+
+logging:
+  level:
+    org:
+      springframework:
+        orm:
+          jpa: DEBUG
+          jpa.JpaTransactionManager: DEBUG
+        transaction: INFO
+        transaction.interceptor: DEBUG
+        web: DEBUG
+        web.servlet.DispatcherServlet: DEBUG
+

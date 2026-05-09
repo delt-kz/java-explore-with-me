@@ -9,10 +9,6 @@ spring:
     hibernate:
       ddl-auto: create-drop
 
-  sql:
-    init:
-      mode: never
-
   h2:
     console:
       enabled: true
