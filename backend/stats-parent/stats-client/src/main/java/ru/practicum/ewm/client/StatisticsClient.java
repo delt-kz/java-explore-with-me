@@ -1,43 +1,45 @@
 package ru.practicum.ewm.client;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.MediaType;
+import org.springframework.web.client.RestClient;
 import ru.practicum.ewm.dto.HitDto;
 import ru.practicum.ewm.dto.StatsDto;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class StatisticsClient {
-    private final RestTemplate rest;
-    private final String serverUrl;
+    private final RestClient restClient;
 
     public StatisticsClient(String serverUrl) {
-        this.rest = new RestTemplate();
-        this.serverUrl = serverUrl;
+        restClient = RestClient.create(serverUrl);
     }
 
     public void sendHit(HitDto hitDto) {
-        rest.postForObject(serverUrl + "/hit", hitDto, Void.class);
+        restClient.post()
+                .uri("/hit")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(hitDto)
+                .retrieve()
+                .toBodilessEntity();
     }
 
     public List<StatsDto> getStats(String start, String end, List<String> uris, boolean unique) {
-        UriComponentsBuilder builder = UriComponentsBuilder
-                .fromHttpUrl(serverUrl + "/stats")
-                .queryParam("start", start)
-                .queryParam("end", end)
-                .queryParam("unique", unique);
+        return restClient.get()
+                .uri(uriBuilder -> {
+                    uriBuilder
+                            .path("/stats")
+                            .queryParam("start", start)
+                            .queryParam("end", end)
+                            .queryParam("unique", unique);
 
-        if (uris != null) {
-            for (String uri : uris) {
-                builder.queryParam("uris", uri);
-            }
-        }
+                    if (uris != null && !uris.isEmpty()) {
+                        uriBuilder.queryParam("uris", uris);
+                    }
 
-        ResponseEntity<StatsDto[]> response =
-                rest.getForEntity(builder.toUriString(), StatsDto[].class);
-
-        return Arrays.asList(response.getBody());
+                    return uriBuilder.build();
+                })
+                .retrieve()
+                .body(new ParameterizedTypeReference<>(){});
     }
 }
