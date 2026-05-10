@@ -9,12 +9,13 @@
 - `backend/stats-parent/stats-client` и `backend/stats-parent/stats-dto` - клиент и DTO для межсервисного взаимодействия.
 - `frontend` - отдельный клиент для просмотра событий, входа и личного кабинета.
 
-## Что есть в текущей версии
+## Что добавлено в текущей версии
 
 - JWT-аутентификация и авторизация по ролям `USER`/`ADMIN`.
 - Приватные endpoint'ы в формате `/users/me/...`.
 - Swagger UI (`springdoc-openapi`) c поддержкой Bearer JWT.
-- Конфигурация сервисов в `application.yml`.
+- Инициализация схемы БД через Flyway.
+- Dev/prod профили Spring для основного сервиса.
 - Отдельный frontend на `Vite + React + TypeScript`.
 - Docker-конфигурация для backend и frontend.
 
@@ -52,6 +53,7 @@
 - Spring Boot 3
 - Spring Security + JWT
 - PostgreSQL
+- Flyway
 - Maven
 - React + TypeScript + Vite
 - Docker / Docker Compose
@@ -89,12 +91,25 @@ cd backend
 mvn clean package -DskipTests
 ```
 
+Локальный запуск основного сервиса с dev-профилем:
+
+```bash
+cd backend
+docker compose up -d ewm-db stats-db stats-server
+cd ewm-service
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+Dev-профиль подключается к PostgreSQL на `localhost:5433/ewm`, использует stats-service на `http://localhost:9090` и дополнительно накатывает демо-данные из `db/dev-migration`.
+
 Запуск в Docker:
 
 ```bash
 cd backend
 docker compose up --build
 ```
+
+В Docker основной сервис запускается с профилем `prod`.
 
 По умолчанию будут доступны:
 
@@ -128,8 +143,22 @@ docker compose up --build
 Основные файлы:
 
 - `backend/ewm-service/src/main/resources/application.yml`
+- `backend/ewm-service/src/main/resources/application-dev.yml`
+- `backend/ewm-service/src/main/resources/application-prod.yml`
 - `backend/stats-parent/stats-service/src/main/resources/application.yml`
 - `frontend/.env`
+
+Профили `ewm-service`:
+
+- `dev` - локальная разработка с PostgreSQL на `localhost:5433`, подробным логированием и демо-данными.
+- `prod` - запуск в контейнерном окружении; профиль активируется в `backend/docker-compose.yml`.
+- `test` - in-memory H2 для тестов.
+
+Миграции БД:
+
+- `backend/ewm-service/src/main/resources/db/migration/V1__init_schema.sql` - базовая схема основного сервиса.
+- `backend/ewm-service/src/main/resources/db/dev-migration/V100__demo_data.sql` - тестовые данные, которые применяются только с `dev` профилем.
+- `backend/stats-parent/stats-service/src/main/resources/db/migration/V1__init_schema.sql` - базовая схема сервиса статистики.
 
 ## Тесты и качество
 
